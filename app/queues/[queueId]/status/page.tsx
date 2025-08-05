@@ -42,7 +42,7 @@ export default function QueueStatusPage() {
   const params = useParams()
   const router = useRouter()
   const { data: session } = useSession()
-  const queueId = params.id as string
+  const queueId = params.queueId as string
 
   const [queue, setQueue] = useState<Queue | null>(null)
   const [clientEntry, setClientEntry] = useState<QueueEntry | null>(null)

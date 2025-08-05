@@ -462,17 +462,17 @@ cash_flow (
 - `DELETE /api/bookings/[id]` - Cancelar agendamento
 
 ### Fila Virtual (Futuro)
-- `POST /api/queues/[id]/join` - Entrar na fila (geral ou específica)
-- `POST /api/queues/[id]/leave` - Sair da fila
-- `GET /api/queues/[id]/status` - Status da fila (posição, tempo estimado)
-- `GET /api/queues/[id]/my-position` - Minha posição na fila
+- `POST /api/queues/[queueId]/join` - Entrar na fila (geral ou específica)
+- `POST /api/queues/[queueId]/leave` - Sair da fila
+- `GET /api/queues/[queueId]/status` - Status da fila (posição, tempo estimado)
+- `GET /api/queues/[queueId]/my-position` - Minha posição na fila
 - `POST /api/queues/next` - Chamar próximo (baseado em tempo de espera)
 - `POST /api/queues/timeout` - Remover cliente que não se apresentou
 - `GET /api/barbershops/[id]/active-barbers` - Listar barbeiros ativos
 - `POST /api/barbers/activate` - Ativar status do barbeiro
 - `POST /api/barbers/deactivate` - Desativar status do barbeiro
-- `POST /api/queues/[id]/add-guest` - Adicionar cliente sem conta (recepcionista)
-- `POST /api/queues/[id]/add-dependent` - Adicionar dependente à fila
+- `POST /api/queues/[queueId]/add-guest` - Adicionar cliente sem conta (recepcionista)
+- `POST /api/queues/[queueId]/add-dependent` - Adicionar dependente à fila
 - `POST /api/queues/transfer-to-general` - Transferir para fila geral (automático)
 
 ### Dashboard (Futuro)
@@ -537,7 +537,7 @@ cash_flow (
 2. **Barbearias** (`/barbershops`) - Busca e filtros
 3. **Barbearia** (`/barbershops/[id]`) - Detalhes e agendamento
 4. **Agendamentos** (`/bookings`) - Histórico do usuário
-5. **Fila** (`/queues/[id]`) - Visualizar fila (futuro)
+5. **Fila** (`/queues/[queueId]`) - Visualizar fila (futuro)
 6. **Dashboard** (`/dashboard`) - Admin/Barbeiro/Recepcionista (futuro)
 7. **Recepcionista** (`/receptionist`) - Interface do recepcionista (futuro)
 
