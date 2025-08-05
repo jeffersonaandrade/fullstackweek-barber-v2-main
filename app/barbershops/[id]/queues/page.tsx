@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/_components/ui/card'
 import { Button } from '@/app/_components/ui/button'
 import { Badge } from '@/app/_components/ui/badge'
-import { ArrowLeft, Users, Clock, MapPin, Phone, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Users, Clock, MapPin, Phone, AlertCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Queue {
@@ -44,31 +44,13 @@ export default function QueueSelectionPage() {
   const [activeBarbers, setActiveBarbers] = useState<ActiveBarber[]>([])
   const [loading, setLoading] = useState(true)
   const [joiningQueue, setJoiningQueue] = useState<string | null>(null)
+  const [barbershopInfo, setBarbershopInfo] = useState<any>(null)
 
   useEffect(() => {
     if (barbershopId) {
-      fetchQueues()
       fetchActiveBarbers()
     }
   }, [barbershopId])
-
-  const fetchQueues = async () => {
-    try {
-      const response = await fetch(`/api/queues?barbershopId=${barbershopId}`)
-      const data = await response.json()
-
-      if (response.ok) {
-        setQueues(data.queues || [])
-      } else {
-        toast.error('Erro ao carregar filas')
-      }
-    } catch (error) {
-      console.error('Erro ao buscar filas:', error)
-      toast.error('Erro ao carregar filas')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const fetchActiveBarbers = async () => {
     try {
@@ -77,9 +59,74 @@ export default function QueueSelectionPage() {
 
       if (response.ok) {
         setActiveBarbers(data.barbers || [])
+        
+        // Se há barbeiros ativos, buscar filas
+        if (data.barbers && data.barbers.length > 0) {
+          fetchQueues()
+        } else {
+          // Se não há barbeiros ativos, buscar informações da barbearia para mostrar mensagem
+          fetchBarbershopInfo()
+        }
+      } else {
+        toast.error('Erro ao verificar disponibilidade da barbearia')
       }
     } catch (error) {
       console.error('Erro ao buscar barbeiros ativos:', error)
+      toast.error('Erro ao verificar disponibilidade da barbearia')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchBarbershopInfo = async () => {
+    try {
+      const response = await fetch(`/api/barbershops/${barbershopId}`)
+      const data = await response.json()
+
+      if (response.ok) {
+        setBarbershopInfo(data.barbershop)
+      }
+    } catch (error) {
+      console.error('Erro ao buscar informações da barbearia:', error)
+    }
+  }
+
+  const fetchQueues = async () => {
+    try {
+      const response = await fetch(`/api/queues?barbershopId=${barbershopId}`)
+      const data = await response.json()
+
+      if (response.ok) {
+        if (data.queues && data.queues.length > 0) {
+          setQueues(data.queues)
+        } else {
+          // Se não há filas, criar uma fila padrão
+          const createResponse = await fetch('/api/queues/create-default', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ barbershopId })
+          })
+
+          if (createResponse.ok) {
+            // Buscar novamente as filas após criar
+            const refreshResponse = await fetch(`/api/queues?barbershopId=${barbershopId}`)
+            const refreshData = await refreshResponse.json()
+            
+            if (refreshResponse.ok) {
+              setQueues(refreshData.queues || [])
+            }
+          } else {
+            toast.error('Erro ao criar fila padrão')
+          }
+        }
+      } else {
+        toast.error('Erro ao carregar filas')
+      }
+    } catch (error) {
+      console.error('Erro ao buscar filas:', error)
+      toast.error('Erro ao carregar filas')
     }
   }
 
@@ -134,9 +181,59 @@ export default function QueueSelectionPage() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p>Carregando filas...</p>
+            <p>Verificando disponibilidade da barbearia...</p>
           </div>
         </div>
+      </div>
+    )
+  }
+
+  // Verificar se há barbeiros ativos - Regra de Negócio implementada
+  if (activeBarbers.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Button
+          variant="ghost"
+          onClick={() => router.back()}
+          className="mb-6"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Voltar
+        </Button>
+        
+        <Card className="max-w-md mx-auto">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+              <XCircle className="h-8 w-8 text-red-600" />
+            </div>
+            <CardTitle className="text-xl text-red-600">Barbearia Fechada</CardTitle>
+            <CardDescription>
+              No momento não há barbeiros ativos nesta barbearia.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <div className="text-sm text-muted-foreground">
+              <p>Para entrar na fila, é necessário que pelo menos um barbeiro esteja ativo.</p>
+              <p className="mt-2">Tente novamente mais tarde ou entre em contato com a barbearia.</p>
+            </div>
+            
+            {barbershopInfo && (
+              <div className="bg-muted p-4 rounded-lg">
+                <h4 className="font-medium mb-2">{barbershopInfo.name}</h4>
+                {barbershopInfo.phones && (
+                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                    <Phone className="h-4 w-4" />
+                    <span>{barbershopInfo.phones}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <Button onClick={() => router.back()} className="w-full">
+              Voltar para barbearia
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -197,6 +294,26 @@ export default function QueueSelectionPage() {
             </div>
           )}
         </div>
+
+        {/* Status da barbearia - NOVO */}
+        <Card className="mb-6 border-green-200 bg-green-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-700">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              Barbearia Aberta
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <span className="text-green-700">
+                {activeBarbers.length} barbeiro{activeBarbers.length > 1 ? 's' : ''} ativo{activeBarbers.length > 1 ? 's' : ''}
+              </span>
+              <Badge variant="outline" className="border-green-300 text-green-700">
+                Disponível para filas
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Resumo geral das filas */}
         <Card className="mb-6">

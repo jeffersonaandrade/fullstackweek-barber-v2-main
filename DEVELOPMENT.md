@@ -222,6 +222,36 @@ app/
 6. **Timeout**: Barbeiro gerencia clientes que não se apresentaram
 7. **Desativação**: Barbeiro desativa status ao final do expediente
 
+### Regras de Negócio - Disponibilidade da Barbearia ⭐
+**Regra Principal: Barbearia Ativa = Barbeiro Ativo**
+- **Uma barbearia só pode estar disponível para receber clientes na fila se houver pelo menos um barbeiro ativo**
+- **Barbeiro ativo = Barbearia ativa**
+- **Sem barbeiros ativos = Barbearia fechada**
+
+**Fluxo de Verificação de Disponibilidade:**
+1. **Cliente acessa página de filas da barbearia**
+2. **Sistema verifica se há barbeiros ativos** (`/api/barbershops/[id]/active-barbers`)
+3. **Se há barbeiros ativos**:
+   - ✅ Barbearia está **ABERTA**
+   - ✅ Cliente pode entrar na fila
+   - ✅ Sistema oferece **duas opções**:
+     - **Fila Geral**: Qualquer barbeiro disponível
+     - **Fila Específica**: Barbeiro escolhido pelo cliente
+4. **Se NÃO há barbeiros ativos**:
+   - ❌ Barbearia está **FECHADA**
+   - ❌ Cliente **NÃO pode entrar na fila**
+   - ❌ Sistema exibe mensagem: *"Barbearia fechada. Não há barbeiros ativos no momento."*
+
+**Tipos de Fila Disponíveis:**
+- **Fila Geral**: Cliente é atendido pelo primeiro barbeiro disponível
+- **Fila Específica**: Cliente escolhe um barbeiro específico para atendimento
+
+**Implementação Técnica:**
+- **API de verificação**: `/api/barbershops/[id]/active-barbers`
+- **Criação automática de filas**: Apenas quando há barbeiros ativos
+- **Interface**: Mostrar/ocultar opções baseado na disponibilidade
+- **Mensagens**: Feedback claro sobre status da barbearia
+
 ### Agendamentos
 - Horários disponíveis: 08:00 às 18:00
 - Intervalo: 30 minutos
@@ -244,6 +274,27 @@ app/
 - **Dependentes**: Cliente pode adicionar dependentes cadastrados à fila
 - **Transferência automática**: Se barbeiro fica inativo, cliente vai para fila geral mantendo tempo
 - **Timeout de apresentação**: Configurável pelo admin (padrão: 5-10 minutos)
+
+### Sistema de Serviços ⭐
+- **Configuração pelo Admin**: Admin define todos os serviços disponíveis por barbearia
+- **Categorização**: Serviços organizados por categoria (cabelo, barba, sobrancelha, etc.)
+- **Seleção do Cliente**: Cliente escolhe o serviço ao entrar na fila
+- **Cálculo Automático**: Sistema calcula valor total automaticamente baseado nos serviços
+- **Serviços Extras**: Barbeiro pode adicionar serviços extras durante atendimento
+- **Precificação**: Barbeiro NUNCA define valores, apenas seleciona serviços
+- **Exemplo de Fluxo**:
+  1. Cliente escolhe "Cabelo com tesoura e máquina" ao entrar na fila
+  2. Sistema calcula valor automaticamente (ex: R$ 25,00)
+  3. Durante atendimento, cliente quer fazer barba também
+  4. Barbeiro adiciona serviço "Barba" na interface
+  5. Sistema recalcula automaticamente (ex: R$ 25,00 + R$ 15,00 = R$ 40,00)
+- **Estrutura de Serviços**:
+  - Nome do serviço
+  - Descrição
+  - Categoria (cabelo, barba, sobrancelha, etc.)
+  - Preço fixo
+  - Tempo estimado de execução
+  - Status (ativo/inativo)
 
 ### Comissões
 - **Pagamento automático**: Sistema soma serviços e produtos automaticamente
@@ -931,7 +982,15 @@ Com o dashboard administrativo completo, o próximo foco é implementar o sistem
 - ✅ **Infraestrutura pronta**: Supabase configurado e APIs funcionais
 - ✅ **Interface responsiva**: Componentes UI reutilizáveis implementados
 
-### Sprint 6: Funcionalidades Avançadas (Após Fila Virtual)
+### Sprint 6: Sistema de Serviços (Prioridade Alta)
+- [ ] **Gestão de serviços por barbearia** (admin)
+- [ ] **Seleção de serviços pelo cliente** na entrada da fila
+- [ ] **Cálculo automático de valores** baseado nos serviços
+- [ ] **Adição de serviços extras** pelo barbeiro durante atendimento
+- [ ] **Interface para configurar serviços** (nome, descrição, preço)
+- [ ] **Categorização de serviços** (cabelo, barba, sobrancelha, etc.)
+
+### Sprint 7: Funcionalidades Avançadas (Após Sistema de Serviços)
 - [ ] **Sistema de comissões** (baseado na configuração já implementada)
 - [ ] **Relatórios financeiros** (fluxo de caixa, vendas)
 - [ ] **Gestão de produtos e estoque**

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app
 import { Button } from "@/app/_components/ui/button"
 import { Badge } from "@/app/_components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/_components/ui/select"
-import { Scissors, Users, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react"
+import { Scissors, Users, Clock, CheckCircle, XCircle, AlertCircle, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 
 interface BarberStatus {
@@ -162,6 +162,16 @@ export default function BarberDashboard() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
+        <div className="mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Button>
+        </div>
         <h1 className="text-3xl font-bold mb-2">Dashboard do Barbeiro</h1>
         <p className="text-muted-foreground">
           Gerencie seu status de trabalho e atendimentos
