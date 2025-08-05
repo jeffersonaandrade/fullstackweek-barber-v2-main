@@ -119,6 +119,21 @@ const BarbershopPage = async ({ params }: BarbershopPageProps) => {
           <PhoneItem key={phone} phone={phone} />
         ))}
       </div>
+
+      {/* FILA VIRTUAL */}
+      <div className="space-y-3 border-t border-solid p-5">
+        <h2 className="text-xs font-bold uppercase text-gray-400">Fila Virtual</h2>
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Entre na fila virtual e acompanhe sua posição em tempo real.
+          </p>
+          <Button className="w-full" asChild>
+            <Link href={`/queues/${barbershop.id}`}>
+              Entrar na Fila
+            </Link>
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }
