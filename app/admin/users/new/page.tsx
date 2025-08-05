@@ -195,12 +195,14 @@ export default function NewUser() {
                 <p className="text-sm text-muted-foreground">
                   {formData.role === 'admin' 
                     ? 'Administradores têm acesso total ao sistema'
-                    : 'Usuários comuns precisam estar associados a uma barbearia'
+                    : formData.role === 'barber'
+                    ? 'Barbeiros podem se ativar em qualquer barbearia da rede'
+                    : 'Recepcionistas precisam estar associados a uma barbearia específica'
                   }
                 </p>
               </div>
 
-              {formData.role !== 'admin' && (
+              {formData.role === 'receptionist' && (
                 <div className="space-y-2">
                   <Label htmlFor="barbershop_id">Barbearia *</Label>
                   <Select
@@ -221,8 +223,17 @@ export default function NewUser() {
                   <p className="text-sm text-muted-foreground">
                     {barbershops.length === 0 
                       ? 'Nenhuma barbearia cadastrada. Crie uma barbearia primeiro.'
-                      : 'Selecione a barbearia onde o usuário trabalhará'
+                      : 'Selecione a barbearia onde o recepcionista trabalhará'
                     }
+                  </p>
+                </div>
+              )}
+
+              {formData.role === 'barber' && (
+                <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    <strong>Nota:</strong> Barbeiros podem se ativar e desativar em qualquer barbearia da rede. 
+                    Eles não precisam estar vinculados permanentemente a uma barbearia específica.
                   </p>
                 </div>
               )}

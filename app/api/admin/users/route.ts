@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Senha deve ter pelo menos 6 caracteres' }, { status: 400 })
     }
 
-    if (role !== 'admin' && !barbershop_id) {
-      return NextResponse.json({ error: 'Usuários não-admin devem estar associados a uma barbearia' }, { status: 400 })
+    if (role === 'receptionist' && !barbershop_id) {
+      return NextResponse.json({ error: 'Recepcionistas devem estar associados a uma barbearia' }, { status: 400 })
     }
 
     // Verificar se o email já existe
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       email,
       password,
       role,
-      barbershop_id: barbershop_id || null,
+      barbershop_id: role === 'receptionist' ? barbershop_id : null, // Apenas recepcionistas têm barbershop_id
       phone: phone || null
     })
 
