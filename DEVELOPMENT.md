@@ -848,6 +848,23 @@ cash_flow (
   - ✅ Componente ImageUpload reutilizável com preview
   - ✅ Fallback para imagens quebradas ou inexistentes
 
+### v1.3.0 (Atual - Sistema de Fila Virtual)
+- ✅ **Tabelas do sistema de fila** criadas no Supabase
+- ✅ **Tipos TypeScript** atualizados para novas tabelas
+- ✅ **APIs do sistema de fila** implementadas:
+  - ✅ Listar e criar filas
+  - ✅ Entrar/sair da fila
+  - ✅ Verificar status da fila
+  - ✅ Ativar status de barbeiros
+- ✅ **Interface do cliente** para sistema de fila:
+  - ✅ Página de seleção de fila (geral e específica)
+  - ✅ Página de status da fila com atualização automática
+  - ✅ Botão "Entrar na Fila" na página da barbearia
+  - ✅ Suporte a clientes com e sem conta (guests)
+- ✅ **Sistema de prioridade** por tempo de espera
+- ✅ **Cálculo automático** de tempo estimado
+- ✅ **Interface responsiva** e moderna
+
 ---
 
 ## 📞 Contato e Suporte
@@ -865,14 +882,14 @@ cash_flow (
 Com o dashboard administrativo completo, o próximo foco é implementar o sistema de fila virtual:
 
 #### Funcionalidades Principais:
-- [ ] **Modelos de dados para fila** (geral e específica)
-- [ ] **API de entrada/saída da fila**
-- [ ] **Sistema de prioridade por tempo de espera**
-- [ ] **Interface do cliente** (escolha de fila)
+- [x] **Modelos de dados para fila** (geral e específica)
+- [x] **API de entrada/saída da fila**
+- [x] **Sistema de prioridade por tempo de espera**
+- [x] **Interface do cliente** (escolha de fila)
 - [ ] **Tempo real com WebSockets** (Supabase Realtime)
-- [ ] **Sistema de ativação/desativação de barbeiros**
+- [x] **Sistema de ativação/desativação de barbeiros**
 - [ ] **Interface para barbeiros gerenciarem fila**
-- [ ] **Sistema de clientes sem conta (guest)**
+- [x] **Sistema de clientes sem conta (guest)**
 - [ ] **Interface para adicionar clientes** (barbeiros e recepcionistas)
 - [ ] **Sistema de crianças na fila**
 
