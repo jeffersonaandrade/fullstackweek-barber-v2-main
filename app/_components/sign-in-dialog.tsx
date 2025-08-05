@@ -7,6 +7,7 @@ import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import { useState } from "react"
 import { toast } from "sonner"
+import Link from "next/link"
 
 const SignInDialog = () => {
   const [email, setEmail] = useState("")
@@ -86,12 +87,20 @@ const SignInDialog = () => {
         </Button>
       </form>
 
-      <div className="mt-4 text-center text-sm text-muted-foreground">
-        <p>Credenciais de teste:</p>
-        <p className="font-mono text-xs">
-          admin@barbearia.com / admin123
-        </p>
-      </div>
+                   <div className="mt-4 text-center text-sm text-muted-foreground">
+               <p>Credenciais de teste:</p>
+               <p className="font-mono text-xs">
+                 admin@barbearia.com / admin123
+               </p>
+               <div className="mt-4 pt-4 border-t">
+                 <p>Não tem uma conta?</p>
+                 <Button variant="outline" size="sm" asChild className="mt-2">
+                   <Link href="/auth/signup">
+                     Cadastre-se
+                   </Link>
+                 </Button>
+               </div>
+             </div>
     </>
   )
 }

@@ -58,6 +58,22 @@ const Home = async () => {
           </span>
         </p>
 
+        {/* BOTÕES DE LOGIN/REGISTRO */}
+        {!session?.user && (
+          <div className="mt-4 flex gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/auth/signin">
+                Entrar
+              </Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/auth/signup">
+                Criar Conta
+              </Link>
+            </Button>
+          </div>
+        )}
+
         {/* BUSCA */}
         <div className="mt-6">
           <Search />

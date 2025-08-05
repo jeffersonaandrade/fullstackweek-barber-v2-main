@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../../_lib/auth"
+import { supabaseAdmin } from "../../_lib/supabase"
 import { Card, CardContent, CardHeader, CardTitle } from "../../_components/ui/card"
 import { Button } from "../../_components/ui/button"
 import { Badge } from "../../_components/ui/badge"
@@ -23,16 +24,26 @@ export default async function AdminBarbershops() {
     redirect('/')
   }
 
-  // Buscar barbearias do Supabase
+  // Buscar barbearias do Supabase diretamente
   let barbershops: any[] = []
   
   try {
-    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/admin/barbershops`, {
-      cache: 'no-store'
-    })
-    
-    if (response.ok) {
-      barbershops = await response.json()
+    const { data, error } = await supabaseAdmin
+      .from('barbershops')
+      .select(`
+        *,
+        users!barbershops_admin_id_fkey (
+          id,
+          name,
+          email
+        )
+      `)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Erro ao buscar barbearias:', error)
+    } else {
+      barbershops = data || []
     }
   } catch (error) {
     console.error('Erro ao buscar barbearias:', error)

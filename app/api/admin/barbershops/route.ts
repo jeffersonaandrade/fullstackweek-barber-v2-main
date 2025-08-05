@@ -11,6 +11,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
+    console.log('Buscando barbearias para admin:', session.user.id)
+
     const { data: barbershops, error } = await supabaseAdmin
       .from('barbershops')
       .select(`
@@ -28,6 +30,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
     }
 
+    console.log('Barbearias encontradas:', barbershops?.length || 0)
     return NextResponse.json(barbershops)
   } catch (error) {
     console.error('Erro:', error)

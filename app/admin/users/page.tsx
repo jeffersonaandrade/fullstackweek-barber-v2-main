@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../../_lib/auth"
+import { supabaseAdmin } from "../../_lib/supabase"
 import { Card, CardContent, CardHeader, CardTitle } from "../../_components/ui/card"
 import { Button } from "../../_components/ui/button"
 import { Badge } from "../../_components/ui/badge"
@@ -23,16 +24,25 @@ export default async function AdminUsers() {
     redirect('/')
   }
 
-  // Buscar usuários do Supabase
+  // Buscar usuários do Supabase diretamente
   let users: any[] = []
 
   try {
-    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/admin/users`, {
-      cache: 'no-store'
-    })
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .select(`
+        *,
+        barbershops!users_barbershop_id_fkey (
+          id,
+          name
+        )
+      `)
+      .order('created_at', { ascending: false })
 
-    if (response.ok) {
-      users = await response.json()
+    if (error) {
+      console.error('Erro ao buscar usuários:', error)
+    } else {
+      users = data || []
     }
   } catch (error) {
     console.error('Erro ao buscar usuários:', error)
