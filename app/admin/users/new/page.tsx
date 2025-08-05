@@ -55,8 +55,8 @@ export default function NewUser() {
       return
     }
 
-    if (formData.role !== 'admin' && !formData.barbershop_id) {
-      toast.error("Selecione uma barbearia para usuários não-admin")
+    if (formData.role === 'receptionist' && !formData.barbershop_id) {
+      toast.error("Recepcionistas devem estar associados a uma barbearia")
       return
     }
 
