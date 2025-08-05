@@ -30,13 +30,7 @@ export default async function AdminUsers() {
   try {
     const { data, error } = await supabaseAdmin
       .from('users')
-      .select(`
-        *,
-        barbershops!users_barbershop_id_fkey (
-          id,
-          name
-        )
-      `)
+      .select('*')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -140,10 +134,10 @@ export default async function AdminUsers() {
                   </div>
                 )}
 
-                {user.barbershop && (
+                {user.barbershop_id && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Building2 className="h-4 w-4" />
-                    <span>{user.barbershop.name}</span>
+                    <span>Barbearia ID: {user.barbershop_id}</span>
                   </div>
                 )}
 

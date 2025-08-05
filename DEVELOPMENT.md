@@ -339,6 +339,9 @@ booking_status: 'confirmed', 'cancelled', 'completed'
 users (
   id, name, email, phone, role, barbershop_id, created_at, updated_at
 )
+-- Nota: barbershop_id é obrigatório apenas para recepcionistas
+-- Barbeiros podem ter barbershop_id = null (se ativam em qualquer barbearia)
+-- Administradores sempre têm barbershop_id = null (acesso total)
 
 -- Dependentes dos clientes
 dependents (
@@ -707,6 +710,12 @@ cash_flow (
 5. **Admin pode** excluir funcionários (com confirmação)
 6. **Sem envio de emails** - Economia de custos e simplicidade
 
+#### Regras de Associação por Tipo de Usuário
+1. **Administradores**: Não precisam estar associados a uma barbearia (acesso total)
+2. **Barbeiros**: Não precisam estar associados a uma barbearia específica - podem se ativar/desativar em qualquer barbearia da rede
+3. **Recepcionistas**: Devem estar associados a uma barbearia específica onde trabalham
+4. **Clientes**: Não precisam estar associados a uma barbearia (podem frequentar qualquer uma)
+
 #### Configuração de Comissões (Admin)
 1. **Admin define** percentual de comissão por barbearia
 2. **Configuração flexível** - Cada barbearia pode ter % diferente
@@ -714,10 +723,12 @@ cash_flow (
 4. **Relatórios** mostram comissões devidas por barbeiro
 
 #### Gestão de Barbeiros Ativos
-1. **Barbeiro ativa** status em uma barbearia
+1. **Barbeiro ativa** status em uma barbearia da rede
 2. **Sistema desativa** automaticamente em outras barbearias
 3. **Log registra** a mudança: "Desativado automaticamente em X"
 4. **Cliente vê** apenas barbeiros ativos na sua barbearia
+5. **Barbeiros podem** se ativar/desativar em qualquer barbearia da rede
+6. **Flexibilidade total**: Barbeiros não estão vinculados permanentemente a uma barbearia específica
 
 #### Controle de Faltas (No-show)
 1. **Barbeiro marca** cliente como "não compareceu"
@@ -794,6 +805,10 @@ cash_flow (
 - ✅ Menu admin no sidebar para usuários admin
 - ✅ Autenticação e autorização admin
 - ✅ Interface responsiva e moderna
+- ✅ Sistema de registro público de clientes
+- ✅ Gestão de usuários com regras corretas de associação
+- ✅ Barbeiros podem se ativar em qualquer barbearia da rede
+- ✅ Recepcionistas associados a barbearias específicas
 
 ---
 
