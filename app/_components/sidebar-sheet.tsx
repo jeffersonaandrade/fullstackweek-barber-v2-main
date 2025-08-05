@@ -65,6 +65,14 @@ const SidebarSheet = () => {
             Agendamentos
           </Link>
         </Button>
+        {data?.user?.role === 'admin' && (
+          <Button className="justify-start gap-2" variant="ghost" asChild>
+            <Link href="/admin">
+              <Settings size={18} />
+              Admin
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-col gap-2 border-b border-solid py-5">
