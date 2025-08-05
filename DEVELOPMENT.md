@@ -149,13 +149,19 @@ app/
 
 ### Sprint 4: Dashboard Admin (3-4 semanas)
 - [x] Dashboard administrativo completo
-- [x] **Gestão de barbearias** (criar, editar, excluir)
+- [x] **Gestão de barbearias** (criar, editar, excluir, visualizar detalhes)
 - [x] **Formulário completo para nova barbearia** (nome, endereço, telefones, descrição, comissão, timeout)
 - [x] **API para criar barbearias** no Supabase
-- [x] **Componentes UI** (Textarea, Switch)
+- [x] **Componentes UI** (Textarea, Switch, ImageUpload)
 - [x] **Menu admin no sidebar** para usuários admin
-- [ ] **Gestão de usuários** (cadastrar, editar, excluir, definir funções)
-- [ ] **Sistema de gestão de senhas** (admin define senhas)
+- [x] **Gestão de usuários** (cadastrar, editar, excluir, definir funções)
+- [x] **Sistema de gestão de senhas** (admin define senhas)
+- [x] **Páginas de edição e visualização** (barbearias e usuários)
+- [x] **Upload de imagens** para barbearias e usuários
+- [x] **Página de detalhes da barbearia** com estatísticas e staff
+- [x] **Página de gerenciamento de staff** da barbearia
+- [x] **APIs completas** para CRUD de barbearias e usuários
+- [x] **Botões funcionais** nas listagens (Ver Detalhes, Gerenciar Staff, Editar)
 - [ ] **Configuração de comissões** (admin define % por barbearia)
 - [ ] Sistema de comissões
 - [ ] Relatórios financeiros
@@ -484,21 +490,22 @@ cash_flow (
 ### Gestão de Barbearias
 - `POST /api/admin/barbershops` - Criar nova barbearia ✅
 - `GET /api/admin/barbershops` - Listar todas as barbearias ✅
-- `PUT /api/admin/barbershops/[id]` - Editar barbearia (futuro)
-- `DELETE /api/admin/barbershops/[id]` - Excluir barbearia (futuro)
+- `GET /api/admin/barbershops/[id]` - Buscar barbearia específica ✅
+- `PUT /api/admin/barbershops/[id]` - Editar barbearia ✅
+- `DELETE /api/admin/barbershops/[id]` - Excluir barbearia ✅
 - `PUT /api/admin/barbershops/[id]/commission` - Configurar comissão (futuro)
 - `PUT /api/admin/barbershops/[id]/timeout` - Configurar timeout de apresentação (futuro)
 
-### Gestão de Usuários (Futuro)
-- `POST /api/admin/users` - Cadastrar novo usuário (com senha)
-- `PUT /api/admin/users/[id]` - Editar usuário
-- `DELETE /api/admin/users/[id]` - Excluir usuário
-- `PUT /api/admin/users/[id]/role` - Alterar função do usuário
-- `PUT /api/admin/users/[id]/password` - Alterar senha (admin)
-- `GET /api/admin/users` - Listar todos os usuários
-- `GET /api/admin/users/barbers` - Listar barbeiros
-- `GET /api/admin/users/receptionists` - Listar recepcionistas
-- `GET /api/admin/users/[id]` - Detalhes do usuário
+### Gestão de Usuários
+- `POST /api/admin/users` - Cadastrar novo usuário (com senha) ✅
+- `GET /api/admin/users` - Listar todos os usuários ✅
+- `GET /api/admin/users/[id]` - Buscar usuário específico ✅
+- `PUT /api/admin/users/[id]` - Editar usuário ✅
+- `DELETE /api/admin/users/[id]` - Excluir usuário ✅
+- `PUT /api/admin/users/[id]/role` - Alterar função do usuário (futuro)
+- `PUT /api/admin/users/[id]/password` - Alterar senha (admin) (futuro)
+- `GET /api/admin/users/barbers` - Listar barbeiros (futuro)
+- `GET /api/admin/users/receptionists` - Listar recepcionistas (futuro)
 
 ### Gestão de Dependentes (Futuro)
 - `POST /api/dependents` - Cadastrar dependente
@@ -538,13 +545,18 @@ cash_flow (
 8. **Admin Dashboard** (`/admin`) - Visão geral da rede ✅
 9. **Barbearias** (`/admin/barbershops`) - Gestão de barbearias ✅
 10. **Nova Barbearia** (`/admin/barbershops/new`) - Criar barbearia ✅
-11. **Usuários** (`/admin/users`) - Gestão de usuários (futuro)
-12. **Produtos** (`/admin/products`) - Gestão de produtos (futuro)
-13. **Estoque** (`/admin/stock`) - Controle de estoque (futuro)
-14. **Vendas** (`/admin/sales`) - Histórico de vendas (futuro)
-15. **Fluxo de Caixa** (`/admin/cash-flow`) - Relatórios financeiros (futuro)
-16. **WhatsApp** (`/admin/whatsapp`) - Gestão de dispositivos (futuro)
-17. **Relatórios** (`/admin/reports`) - Relatórios completos (futuro)
+11. **Detalhes Barbearia** (`/admin/barbershops/[id]`) - Visualizar detalhes e estatísticas ✅
+12. **Editar Barbearia** (`/admin/barbershops/[id]/edit`) - Editar informações da barbearia ✅
+13. **Staff Barbearia** (`/admin/barbershops/[id]/staff`) - Gerenciar funcionários da barbearia ✅
+14. **Usuários** (`/admin/users`) - Gestão de usuários ✅
+15. **Novo Usuário** (`/admin/users/new`) - Criar usuário ✅
+16. **Editar Usuário** (`/admin/users/[id]/edit`) - Editar informações do usuário ✅
+17. **Produtos** (`/admin/products`) - Gestão de produtos (futuro)
+18. **Estoque** (`/admin/stock`) - Controle de estoque (futuro)
+19. **Vendas** (`/admin/sales`) - Histórico de vendas (futuro)
+20. **Fluxo de Caixa** (`/admin/cash-flow`) - Relatórios financeiros (futuro)
+21. **WhatsApp** (`/admin/whatsapp`) - Gestão de dispositivos (futuro)
+22. **Relatórios** (`/admin/reports`) - Relatórios completos (futuro)
 
 ### Componentes Principais
 - `Header` - Navegação e autenticação
@@ -563,14 +575,16 @@ cash_flow (
 - `QueueTransferAlert` - Alerta de transferência para fila geral
 
 ### Componentes Admin
+- `AdminHeader` - Header reutilizável para páginas admin ✅
 - `BarbershopForm` - Formulário de barbearias (com comissão e timeout) ✅
+- `ImageUpload` - Componente de upload de imagens com preview ✅
 - `CommissionConfig` - Configuração de comissões (futuro)
 - `TimeoutConfig` - Configuração de timeout de apresentação (futuro)
-- `UserForm` - Formulário de usuários (com campo de senha) (futuro)
-- `UserEditForm` - Formulário de edição de usuários (futuro)
-- `RoleSelector` - Seletor de funções (futuro)
+- `UserForm` - Formulário de usuários (com campo de senha) ✅
+- `UserEditForm` - Formulário de edição de usuários ✅
+- `RoleSelector` - Seletor de funções ✅
 - `PasswordChangeForm` - Formulário de alteração de senha (futuro)
-- `UserManagementTable` - Tabela de gestão de usuários (futuro)
+- `UserManagementTable` - Tabela de gestão de usuários ✅
 - `ProductForm` - Formulário de produtos (futuro)
 - `StockMovement` - Movimentação de estoque (futuro)
 - `SalesChart` - Gráfico de vendas (futuro)
@@ -808,10 +822,10 @@ cash_flow (
 
 ### v1.2.1 (Atual - Dashboard Admin)
 - ✅ Dashboard administrativo completo
-- ✅ Gestão de barbearias (criar, listar)
+- ✅ Gestão de barbearias (criar, listar, editar, visualizar detalhes)
 - ✅ Formulário completo para nova barbearia
 - ✅ API para criar barbearias no Supabase
-- ✅ Componentes UI (Textarea, Switch)
+- ✅ Componentes UI (Textarea, Switch, ImageUpload)
 - ✅ Menu admin no sidebar para usuários admin
 - ✅ Autenticação e autorização admin
 - ✅ Interface responsiva e moderna
@@ -821,6 +835,18 @@ cash_flow (
 - ✅ Recepcionistas associados a barbearias específicas
 - ✅ Página 404 personalizada com layout consistente
 - ✅ Suporte a imagens de barbearias e barbeiros (documentado)
+- ✅ **Sistema completo de edição e visualização**
+  - ✅ Páginas de edição de barbearias e usuários
+  - ✅ Upload de imagens em formulários de edição
+  - ✅ Página de detalhes da barbearia com estatísticas
+  - ✅ Página de gerenciamento de staff da barbearia
+  - ✅ APIs para buscar e atualizar dados específicos
+  - ✅ Botões funcionais nas listagens (Ver Detalhes, Gerenciar Staff, Editar)
+  - ✅ Interface completa com estatísticas, informações e ações rápidas
+  - ✅ Carregamento de dados existentes nos formulários de edição
+  - ✅ Validação e atualização via APIs REST
+  - ✅ Componente ImageUpload reutilizável com preview
+  - ✅ Fallback para imagens quebradas ou inexistentes
 
 ---
 
@@ -830,6 +856,40 @@ cash_flow (
 - **Email**: [seu-email@exemplo.com]
 - **Repositório**: [link-do-repo]
 - **Documentação**: Este arquivo
+
+---
+
+## 🎯 Próximos Passos
+
+### Sprint 5: Sistema de Fila Virtual (Prioridade Alta)
+Com o dashboard administrativo completo, o próximo foco é implementar o sistema de fila virtual:
+
+#### Funcionalidades Principais:
+- [ ] **Modelos de dados para fila** (geral e específica)
+- [ ] **API de entrada/saída da fila**
+- [ ] **Sistema de prioridade por tempo de espera**
+- [ ] **Interface do cliente** (escolha de fila)
+- [ ] **Tempo real com WebSockets** (Supabase Realtime)
+- [ ] **Sistema de ativação/desativação de barbeiros**
+- [ ] **Interface para barbeiros gerenciarem fila**
+- [ ] **Sistema de clientes sem conta (guest)**
+- [ ] **Interface para adicionar clientes** (barbeiros e recepcionistas)
+- [ ] **Sistema de crianças na fila**
+
+#### Benefícios:
+- ✅ **Base sólida**: Dashboard admin completo permite gestão de barbearias e usuários
+- ✅ **Usuários cadastrados**: Sistema de autenticação e gestão de usuários funcionando
+- ✅ **Infraestrutura pronta**: Supabase configurado e APIs funcionais
+- ✅ **Interface responsiva**: Componentes UI reutilizáveis implementados
+
+### Sprint 6: Funcionalidades Avançadas (Após Fila Virtual)
+- [ ] **Sistema de comissões** (baseado na configuração já implementada)
+- [ ] **Relatórios financeiros** (fluxo de caixa, vendas)
+- [ ] **Gestão de produtos e estoque**
+- [ ] **Controle de vendas**
+- [ ] **Integração WhatsApp Web**
+- [ ] **Histórico de atendimentos**
+- [ ] **Avaliações de clientes**
 
 ---
 
