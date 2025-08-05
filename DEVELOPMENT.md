@@ -148,8 +148,12 @@ app/
 - [ ] Gestão de crianças na fila
 
 ### Sprint 4: Dashboard Admin (3-4 semanas)
-- [ ] Dashboard administrativo completo
-- [ ] **Gestão de barbearias** (criar, editar, excluir)
+- [x] Dashboard administrativo completo
+- [x] **Gestão de barbearias** (criar, editar, excluir)
+- [x] **Formulário completo para nova barbearia** (nome, endereço, telefones, descrição, comissão, timeout)
+- [x] **API para criar barbearias** no Supabase
+- [x] **Componentes UI** (Textarea, Switch)
+- [x] **Menu admin no sidebar** para usuários admin
 - [ ] **Gestão de usuários** (cadastrar, editar, excluir, definir funções)
 - [ ] **Sistema de gestão de senhas** (admin define senhas)
 - [ ] **Configuração de comissões** (admin define % por barbearia)
@@ -464,13 +468,13 @@ cash_flow (
 - `GET /api/admin/barbershops/[id]/occupation-stats` - Estatísticas de lotação
 - `GET /api/admin/barbershops/[id]/risks-alerts` - Riscos e alertas
 
-### Gestão de Barbearias (Futuro)
-- `POST /api/admin/barbershops` - Criar nova barbearia
-- `PUT /api/admin/barbershops/[id]` - Editar barbearia
-- `DELETE /api/admin/barbershops/[id]` - Excluir barbearia
-- `GET /api/admin/barbershops` - Listar todas as barbearias
-- `PUT /api/admin/barbershops/[id]/commission` - Configurar comissão
-- `PUT /api/admin/barbershops/[id]/timeout` - Configurar timeout de apresentação
+### Gestão de Barbearias
+- `POST /api/admin/barbershops` - Criar nova barbearia ✅
+- `GET /api/admin/barbershops` - Listar todas as barbearias ✅
+- `PUT /api/admin/barbershops/[id]` - Editar barbearia (futuro)
+- `DELETE /api/admin/barbershops/[id]` - Excluir barbearia (futuro)
+- `PUT /api/admin/barbershops/[id]/commission` - Configurar comissão (futuro)
+- `PUT /api/admin/barbershops/[id]/timeout` - Configurar timeout de apresentação (futuro)
 
 ### Gestão de Usuários (Futuro)
 - `POST /api/admin/users` - Cadastrar novo usuário (com senha)
@@ -517,16 +521,17 @@ cash_flow (
 6. **Dashboard** (`/dashboard`) - Admin/Barbeiro/Recepcionista (futuro)
 7. **Recepcionista** (`/receptionist`) - Interface do recepcionista (futuro)
 
-### Páginas Admin (Futuro)
-8. **Admin Dashboard** (`/admin`) - Visão geral da rede
-9. **Barbearias** (`/admin/barbershops`) - Gestão de barbearias
-10. **Usuários** (`/admin/users`) - Gestão de usuários
-11. **Produtos** (`/admin/products`) - Gestão de produtos
-12. **Estoque** (`/admin/stock`) - Controle de estoque
-13. **Vendas** (`/admin/sales`) - Histórico de vendas
-14. **Fluxo de Caixa** (`/admin/cash-flow`) - Relatórios financeiros
-15. **WhatsApp** (`/admin/whatsapp`) - Gestão de dispositivos
-16. **Relatórios** (`/admin/reports`) - Relatórios completos
+### Páginas Admin
+8. **Admin Dashboard** (`/admin`) - Visão geral da rede ✅
+9. **Barbearias** (`/admin/barbershops`) - Gestão de barbearias ✅
+10. **Nova Barbearia** (`/admin/barbershops/new`) - Criar barbearia ✅
+11. **Usuários** (`/admin/users`) - Gestão de usuários (futuro)
+12. **Produtos** (`/admin/products`) - Gestão de produtos (futuro)
+13. **Estoque** (`/admin/stock`) - Controle de estoque (futuro)
+14. **Vendas** (`/admin/sales`) - Histórico de vendas (futuro)
+15. **Fluxo de Caixa** (`/admin/cash-flow`) - Relatórios financeiros (futuro)
+16. **WhatsApp** (`/admin/whatsapp`) - Gestão de dispositivos (futuro)
+17. **Relatórios** (`/admin/reports`) - Relatórios completos (futuro)
 
 ### Componentes Principais
 - `Header` - Navegação e autenticação
@@ -544,25 +549,25 @@ cash_flow (
 - `DependentManagement` - Gestão de dependentes do cliente
 - `QueueTransferAlert` - Alerta de transferência para fila geral
 
-### Componentes Admin (Futuro)
-- `BarbershopForm` - Formulário de barbearias (com comissão e timeout)
-- `CommissionConfig` - Configuração de comissões
-- `TimeoutConfig` - Configuração de timeout de apresentação
-- `UserForm` - Formulário de usuários (com campo de senha)
-- `UserEditForm` - Formulário de edição de usuários
-- `RoleSelector` - Seletor de funções
-- `PasswordChangeForm` - Formulário de alteração de senha
-- `UserManagementTable` - Tabela de gestão de usuários
-- `ProductForm` - Formulário de produtos
-- `StockMovement` - Movimentação de estoque
-- `SalesChart` - Gráfico de vendas
-- `CashFlowTable` - Tabela de fluxo de caixa
-- `WhatsAppConfig` - Configuração WhatsApp
-- `InventoryAlert` - Alertas de estoque
-- `RevenueReport` - Relatório de receita
-- `OccupationStats` - Estatísticas de lotação
-- `RisksAlerts` - Riscos e alertas do sistema
-- `NoShowManagement` - Gestão de faltas e bloqueios
+### Componentes Admin
+- `BarbershopForm` - Formulário de barbearias (com comissão e timeout) ✅
+- `CommissionConfig` - Configuração de comissões (futuro)
+- `TimeoutConfig` - Configuração de timeout de apresentação (futuro)
+- `UserForm` - Formulário de usuários (com campo de senha) (futuro)
+- `UserEditForm` - Formulário de edição de usuários (futuro)
+- `RoleSelector` - Seletor de funções (futuro)
+- `PasswordChangeForm` - Formulário de alteração de senha (futuro)
+- `UserManagementTable` - Tabela de gestão de usuários (futuro)
+- `ProductForm` - Formulário de produtos (futuro)
+- `StockMovement` - Movimentação de estoque (futuro)
+- `SalesChart` - Gráfico de vendas (futuro)
+- `CashFlowTable` - Tabela de fluxo de caixa (futuro)
+- `WhatsAppConfig` - Configuração WhatsApp (futuro)
+- `InventoryAlert` - Alertas de estoque (futuro)
+- `RevenueReport` - Relatório de receita (futuro)
+- `OccupationStats` - Estatísticas de lotação (futuro)
+- `RisksAlerts` - Riscos e alertas do sistema (futuro)
+- `NoShowManagement` - Gestão de faltas e bloqueios (futuro)
 
 ### Design System
 - **Cores**: Tailwind CSS
@@ -775,10 +780,20 @@ cash_flow (
 - Interface do barbeiro
 
 ### v1.2.0 (Futuro)
-- Dashboard administrativo
+- Dashboard administrativo ✅
 - Sistema de comissões
 - Relatórios financeiros
 - Avaliações
+
+### v1.2.1 (Atual - Dashboard Admin)
+- ✅ Dashboard administrativo completo
+- ✅ Gestão de barbearias (criar, listar)
+- ✅ Formulário completo para nova barbearia
+- ✅ API para criar barbearias no Supabase
+- ✅ Componentes UI (Textarea, Switch)
+- ✅ Menu admin no sidebar para usuários admin
+- ✅ Autenticação e autorização admin
+- ✅ Interface responsiva e moderna
 
 ---
 
@@ -791,5 +806,5 @@ cash_flow (
 
 ---
 
-*Última atualização: [Data]*
-*Versão do documento: 1.0* 
+*Última atualização: 2024-12-19*
+*Versão do documento: 1.2.1* 

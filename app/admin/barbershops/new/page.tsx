@@ -83,8 +83,8 @@ export default function NewBarbershop() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-4">
+    <div className="container mx-auto p-4 lg:p-6 space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <Button variant="outline" size="sm" asChild>
           <Link href="/admin/barbershops">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -92,7 +92,7 @@ export default function NewBarbershop() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">Nova Barbearia</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold">Nova Barbearia</h1>
           <p className="text-muted-foreground">
             Crie uma nova barbearia na sua rede
           </p>
@@ -100,7 +100,7 @@ export default function NewBarbershop() {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
           {/* Informações Básicas */}
           <Card>
             <CardHeader>
@@ -228,7 +228,7 @@ export default function NewBarbershop() {
           </Card>
         </div>
 
-        <div className="flex justify-end gap-4 mt-6">
+        <div className="flex flex-col sm:flex-row justify-end gap-4 mt-6">
           <Button variant="outline" asChild>
             <Link href="/admin/barbershops">
               Cancelar

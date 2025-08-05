@@ -22,15 +22,15 @@ export default async function AdminDashboard() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-4 lg:p-6 space-y-4 lg:space-y-6">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard Administrativo</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold">Dashboard Administrativo</h1>
           <p className="text-muted-foreground">
             Gerencie sua rede de barbearias
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Button asChild>
             <Link href="/admin/barbershops/new">
               <Plus className="w-4 h-4 mr-2" />
@@ -47,7 +47,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Barbearias</CardTitle>
@@ -102,7 +102,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Seções Principais */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -114,7 +114,7 @@ export default async function AdminDashboard() {
             <p className="text-sm text-muted-foreground">
               Crie e gerencie suas barbearias, configure comissões e timeouts.
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button asChild size="sm">
                 <Link href="/admin/barbershops">
                   Ver Todas
@@ -140,7 +140,7 @@ export default async function AdminDashboard() {
             <p className="text-sm text-muted-foreground">
               Cadastre barbeiros, recepcionistas e gerencie suas permissões.
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button asChild size="sm">
                 <Link href="/admin/users">
                   Ver Todos
@@ -165,7 +165,7 @@ export default async function AdminDashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
               <Link href="/admin/barbershops/new">
                 <Building2 className="h-6 w-6" />
