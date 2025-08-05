@@ -142,11 +142,15 @@ export default async function AdminBarbershops() {
                 </div>
 
                 <div className="flex gap-2 pt-2">
-                  <Button size="sm" variant="outline" className="flex-1">
-                    Ver Detalhes
+                  <Button size="sm" variant="outline" className="flex-1" asChild>
+                    <Link href={`/admin/barbershops/${barbershop.id}`}>
+                      Ver Detalhes
+                    </Link>
                   </Button>
-                  <Button size="sm" variant="outline" className="flex-1">
-                    Gerenciar Staff
+                  <Button size="sm" variant="outline" className="flex-1" asChild>
+                    <Link href={`/admin/barbershops/${barbershop.id}/staff`}>
+                      Gerenciar Staff
+                    </Link>
                   </Button>
                 </div>
               </CardContent>

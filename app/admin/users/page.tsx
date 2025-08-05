@@ -151,11 +151,15 @@ export default async function AdminUsers() {
                 </div>
 
                 <div className="flex gap-2 pt-2">
-                  <Button size="sm" variant="outline" className="flex-1">
-                    Ver Detalhes
+                  <Button size="sm" variant="outline" className="flex-1" asChild>
+                    <Link href={`/admin/users/${user.id}/edit`}>
+                      Editar Usuário
+                    </Link>
                   </Button>
-                  <Button size="sm" variant="outline" className="flex-1">
-                    Gerenciar Permissões
+                  <Button size="sm" variant="outline" className="flex-1" asChild>
+                    <Link href={`/admin/users/${user.id}/edit`}>
+                      Gerenciar Permissões
+                    </Link>
                   </Button>
                 </div>
               </CardContent>
