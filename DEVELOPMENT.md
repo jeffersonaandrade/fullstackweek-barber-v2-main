@@ -257,6 +257,14 @@ app/
 - **Barbeiros podem adicionar** clientes à barbearia onde estão ativos
 - **Histórico de atendimentos** mantido para clientes recorrentes
 
+### Gestão de Imagens
+- **Imagens de barbearias**: Logo/fachada da barbearia
+- **Fotos de barbeiros**: Avatar/foto profissional do barbeiro
+- **Upload via Supabase Storage**: Armazenamento seguro e otimizado
+- **Validação de formatos**: JPG, PNG, WebP (máx 5MB)
+- **Redimensionamento automático**: Otimização para diferentes tamanhos
+- **Fallback para imagens quebradas**: Placeholder padrão quando imagem não existe
+
 ### Gestão de Produtos e Estoque
 - **Admin gerencia produtos**: Criar, editar, excluir produtos
 - **Controle de estoque**: Quantidade atual, estoque mínimo
@@ -337,11 +345,12 @@ booking_status: 'confirmed', 'cancelled', 'completed'
 
 -- Usuários (Supabase Auth + tabela customizada)
 users (
-  id, name, email, phone, role, barbershop_id, created_at, updated_at
+  id, name, email, phone, role, barbershop_id, avatar_url, created_at, updated_at
 )
 -- Nota: barbershop_id é obrigatório apenas para recepcionistas
 -- Barbeiros podem ter barbershop_id = null (se ativam em qualquer barbearia)
 -- Administradores sempre têm barbershop_id = null (acesso total)
+-- avatar_url armazena URL da foto do usuário (barbeiro/recepcionista)
 
 -- Dependentes dos clientes
 dependents (
@@ -353,6 +362,7 @@ barbershops (
   id, name, address, phones, description, image_url, 
   is_active, admin_id, commission_rate, timeout_minutes, created_at, updated_at
 )
+-- Nota: image_url armazena URL da imagem da barbearia (logo/fachada)
 
 -- Serviços
 barbershop_services (
@@ -809,6 +819,8 @@ cash_flow (
 - ✅ Gestão de usuários com regras corretas de associação
 - ✅ Barbeiros podem se ativar em qualquer barbearia da rede
 - ✅ Recepcionistas associados a barbearias específicas
+- ✅ Página 404 personalizada com layout consistente
+- ✅ Suporte a imagens de barbearias e barbeiros (documentado)
 
 ---
 

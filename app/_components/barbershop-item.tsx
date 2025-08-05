@@ -1,10 +1,16 @@
-import { Barbershop } from "@prisma/client"
 import { Card, CardContent } from "./ui/card"
 import Image from "next/image"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
-import { StarIcon } from "lucide-react"
+import { StarIcon, Building2 } from "lucide-react"
 import Link from "next/link"
+
+interface Barbershop {
+  id: string
+  name: string
+  address: string
+  image_url?: string | null
+}
 
 interface BarbershopItemProps {
   barbershop: Barbershop
@@ -16,12 +22,25 @@ const BarbershopItem = ({ barbershop }: BarbershopItemProps) => {
       <CardContent className="p-0 px-1 pt-1">
         {/* IMAGEM */}
         <div className="relative h-[159px] w-full">
-          <Image
-            alt={barbershop.name}
-            fill
-            className="rounded-2xl object-cover"
-            src={barbershop.imageUrl}
-          />
+          {barbershop.image_url ? (
+            <Image
+              alt={barbershop.name}
+              fill
+              className="rounded-2xl object-cover"
+              src={barbershop.image_url}
+              onError={(e) => {
+                // Fallback para imagem quebrada
+                const target = e.target as HTMLImageElement
+                target.style.display = 'none'
+                target.nextElementSibling?.classList.remove('hidden')
+              }}
+            />
+          ) : null}
+          
+          {/* Placeholder quando não há imagem */}
+          <div className={`absolute inset-0 bg-muted rounded-2xl flex items-center justify-center ${barbershop.image_url ? 'hidden' : ''}`}>
+            <Building2 className="h-12 w-12 text-muted-foreground" />
+          </div>
 
           <Badge
             className="absolute left-2 top-2 space-x-1"
