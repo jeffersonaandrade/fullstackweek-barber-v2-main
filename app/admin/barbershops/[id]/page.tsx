@@ -19,7 +19,8 @@ import {
   Clock,
   DollarSign,
   Settings,
-  ArrowLeft
+  ArrowLeft,
+  Package
 } from "lucide-react"
 
 interface Barbershop {
@@ -336,6 +337,13 @@ export default async function BarbershopDetails({
                 <Link href={`/admin/barbershops/${id}/staff`}>
                   <Users className="w-4 h-4 mr-2" />
                   Gerenciar Staff
+                </Link>
+              </Button>
+              
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href={`/admin/barbershops/${id}/services`}>
+                  <Package className="w-4 h-4 mr-2" />
+                  Gerenciar Serviços
                 </Link>
               </Button>
               

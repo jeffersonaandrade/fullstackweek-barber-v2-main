@@ -4,13 +4,7 @@ import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { StarIcon, Building2, Users } from "lucide-react"
 import Link from "next/link"
-
-interface Barbershop {
-  id: string
-  name: string
-  address: string
-  image_url?: string | null
-}
+import { Barbershop } from "../_lib/database.types"
 
 interface BarbershopItemProps {
   barbershop: Barbershop

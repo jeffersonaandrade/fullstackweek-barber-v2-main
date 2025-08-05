@@ -109,6 +109,89 @@ export interface Database {
           }
         ]
       }
+      barbershop_services: {
+        Row: {
+          id: string
+          name: string
+          description: string
+          image_url: string
+          price: number
+          barbershop_id: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description: string
+          image_url: string
+          price: number
+          barbershop_id: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string
+          image_url?: string
+          price?: number
+          barbershop_id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barbershop_services_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      bookings: {
+        Row: {
+          id: string
+          user_id: string
+          service_id: string
+          date: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          service_id: string
+          date: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          service_id?: string
+          date?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "barbershop_services"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       queues: {
         Row: {
           id: string
@@ -413,4 +496,22 @@ export interface Database {
       [_ in never]: never
     }
   }
-} 
+}
+
+// Tipos personalizados para facilitar o uso nos componentes
+export type Barbershop = Database['public']['Tables']['barbershops']['Row']
+export type BarbershopService = Database['public']['Tables']['barbershop_services']['Row']
+export type Booking = Database['public']['Tables']['bookings']['Row']
+export type User = Database['public']['Tables']['users']['Row']
+
+// Tipos para inserção
+export type BarbershopInsert = Database['public']['Tables']['barbershops']['Insert']
+export type BarbershopServiceInsert = Database['public']['Tables']['barbershop_services']['Insert']
+export type BookingInsert = Database['public']['Tables']['bookings']['Insert']
+export type UserInsert = Database['public']['Tables']['users']['Insert']
+
+// Tipos para atualização
+export type BarbershopUpdate = Database['public']['Tables']['barbershops']['Update']
+export type BarbershopServiceUpdate = Database['public']['Tables']['barbershop_services']['Update']
+export type BookingUpdate = Database['public']['Tables']['bookings']['Update']
+export type UserUpdate = Database['public']['Tables']['users']['Update'] 

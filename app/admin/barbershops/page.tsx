@@ -14,7 +14,8 @@ import {
   Trash2,
   Users,
   MapPin,
-  Phone
+  Phone,
+  Package
 } from "lucide-react"
 
 export default async function AdminBarbershops() {
@@ -36,6 +37,9 @@ export default async function AdminBarbershops() {
           id,
           name,
           email
+        ),
+        barbershop_services (
+          id
         )
       `)
       .order('created_at', { ascending: false })
@@ -43,7 +47,11 @@ export default async function AdminBarbershops() {
     if (error) {
       console.error('Erro ao buscar barbearias:', error)
     } else {
-      barbershops = data || []
+      // Adicionar contagem de serviços
+      barbershops = (data || []).map(barbershop => ({
+        ...barbershop,
+        services_count: barbershop.barbershop_services?.length || 0
+      }))
     }
   } catch (error) {
     console.error('Erro ao buscar barbearias:', error)
@@ -126,6 +134,11 @@ export default async function AdminBarbershops() {
                   <span>{barbershop.staff_count || 0} funcionários</span>
                 </div>
 
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Package className="h-4 w-4" />
+                  <span>{barbershop.services_count || 0} serviços</span>
+                </div>
+
                 <div className="pt-2 border-t">
                   <div className="flex justify-between text-sm">
                     <span>Comissão:</span>
@@ -148,8 +161,13 @@ export default async function AdminBarbershops() {
                     </Link>
                   </Button>
                   <Button size="sm" variant="outline" className="flex-1" asChild>
+                    <Link href={`/admin/barbershops/${barbershop.id}/services`}>
+                      Serviços
+                    </Link>
+                  </Button>
+                  <Button size="sm" variant="outline" className="flex-1" asChild>
                     <Link href={`/admin/barbershops/${barbershop.id}/staff`}>
-                      Gerenciar Staff
+                      Staff
                     </Link>
                   </Button>
                 </div>

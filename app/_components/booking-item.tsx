@@ -1,6 +1,6 @@
 "use client"
 
-import { Prisma } from "@prisma/client"
+import { Barbershop, BarbershopService, Booking } from "../_lib/database.types"
 import { Avatar, AvatarImage } from "./ui/avatar"
 import { Badge } from "./ui/badge"
 import { Card, CardContent } from "./ui/card"
@@ -33,16 +33,20 @@ import { toast } from "sonner"
 import { useState } from "react"
 import BookingSummary from "./booking-summary"
 
+interface BookingWithRelations {
+  id: string
+  user_id: string
+  service_id: string
+  date: string
+  created_at: string
+  updated_at: string
+  service: BarbershopService & {
+    barbershop: Barbershop
+  }
+}
+
 interface BookingItemProps {
-  booking: Prisma.BookingGetPayload<{
-    include: {
-      service: {
-        include: {
-          barbershop: true
-        }
-      }
-    }
-  }>
+  booking: BookingWithRelations
 }
 
 // TODO: receber agendamento como prop

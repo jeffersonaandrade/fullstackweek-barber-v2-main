@@ -1,6 +1,6 @@
 "use client"
 
-import { Barbershop, BarbershopService, Booking } from "@prisma/client"
+import { Barbershop, BarbershopService, Booking } from "../_lib/database.types"
 import Image from "next/image"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
