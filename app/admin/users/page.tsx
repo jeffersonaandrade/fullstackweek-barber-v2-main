@@ -7,87 +7,107 @@ import { Badge } from "../../_components/ui/badge"
 import AdminHeader from "../../_components/admin-header"
 import Link from "next/link"
 import { 
-  Building2, 
+  Users, 
   Plus, 
   Edit, 
   Trash2,
-  Users,
-  MapPin,
+  Building2,
+  Mail,
   Phone
 } from "lucide-react"
 
-export default async function AdminBarbershops() {
+export default async function AdminUsers() {
   const session = await getServerSession(authOptions)
 
   if (!session?.user || session.user.role !== 'admin') {
     redirect('/')
   }
 
-  // Buscar barbearias do Supabase
-  let barbershops: any[] = []
-  
+  // Buscar usuários do Supabase
+  let users: any[] = []
+
   try {
-    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/admin/barbershops`, {
+    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/admin/users`, {
       cache: 'no-store'
     })
-    
+
     if (response.ok) {
-      barbershops = await response.json()
+      users = await response.json()
     }
   } catch (error) {
-    console.error('Erro ao buscar barbearias:', error)
+    console.error('Erro ao buscar usuários:', error)
+  }
+
+  const getRoleBadgeVariant = (role: string) => {
+    switch (role) {
+      case 'admin': return 'default'
+      case 'barber': return 'secondary'
+      case 'receptionist': return 'outline'
+      case 'client': return 'secondary'
+      default: return 'secondary'
+    }
+  }
+
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case 'admin': return 'Administrador'
+      case 'barber': return 'Barbeiro'
+      case 'receptionist': return 'Recepcionista'
+      case 'client': return 'Cliente'
+      default: return role
+    }
   }
 
   return (
     <div className="container mx-auto p-4 lg:p-6 space-y-4 lg:space-y-6">
       <AdminHeader
-        title="Gestão de Barbearias"
-        subtitle="Crie e gerencie suas barbearias"
+        title="Gestão de Usuários"
+        subtitle="Cadastre e gerencie barbeiros, recepcionistas e clientes"
         showBackButton
         backHref="/admin"
       >
         <Button asChild>
-          <Link href="/admin/barbershops/new">
+          <Link href="/admin/users/new">
             <Plus className="w-4 h-4 mr-2" />
-            Nova Barbearia
+            Novo Usuário
           </Link>
         </Button>
       </AdminHeader>
 
-      {barbershops.length === 0 ? (
+      {users.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Nenhuma barbearia cadastrada</h3>
+            <Users className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Nenhum usuário cadastrado</h3>
             <p className="text-muted-foreground text-center mb-6">
-              Comece criando sua primeira barbearia para gerenciar barbeiros e clientes.
+              Comece cadastrando barbeiros e recepcionistas para sua barbearia.
             </p>
             <Button asChild>
-              <Link href="/admin/barbershops/new">
+              <Link href="/admin/users/new">
                 <Plus className="w-4 h-4 mr-2" />
-                Criar Primeira Barbearia
+                Cadastrar Primeiro Usuário
               </Link>
             </Button>
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-          {barbershops.map((barbershop) => (
-            <Card key={barbershop.id}>
+          {users.map((user) => (
+            <Card key={user.id}>
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2">
-                      <Building2 className="h-5 w-5" />
-                      {barbershop.name}
+                      <Users className="h-5 w-5" />
+                      {user.name}
                     </CardTitle>
-                    <Badge variant={barbershop.is_active ? "default" : "secondary"}>
-                      {barbershop.is_active ? "Ativa" : "Inativa"}
+                    <Badge variant={getRoleBadgeVariant(user.role)}>
+                      {getRoleLabel(user.role)}
                     </Badge>
                   </div>
                   <div className="flex gap-1">
                     <Button size="sm" variant="outline" asChild>
-                      <Link href={`/admin/barbershops/${barbershop.id}/edit`}>
+                      <Link href={`/admin/users/${user.id}/edit`}>
                         <Edit className="h-4 w-4" />
                       </Link>
                     </Button>
@@ -99,33 +119,29 @@ export default async function AdminBarbershops() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  <span>{barbershop.address}</span>
+                  <Mail className="h-4 w-4" />
+                  <span>{user.email}</span>
                 </div>
-                
-                {barbershop.phones && barbershop.phones.length > 0 && (
+
+                {user.phone && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Phone className="h-4 w-4" />
-                    <span>{barbershop.phones[0]}</span>
+                    <span>{user.phone}</span>
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Users className="h-4 w-4" />
-                  <span>{barbershop.staff_count || 0} funcionários</span>
-                </div>
+                {user.barbershop && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Building2 className="h-4 w-4" />
+                    <span>{user.barbershop.name}</span>
+                  </div>
+                )}
 
                 <div className="pt-2 border-t">
                   <div className="flex justify-between text-sm">
-                    <span>Comissão:</span>
+                    <span>Criado em:</span>
                     <span className="font-medium">
-                      {barbershop.commission_rate || 0}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Timeout:</span>
-                    <span className="font-medium">
-                      {barbershop.timeout_minutes || 5} min
+                      {new Date(user.created_at).toLocaleDateString('pt-BR')}
                     </span>
                   </div>
                 </div>
@@ -135,7 +151,7 @@ export default async function AdminBarbershops() {
                     Ver Detalhes
                   </Button>
                   <Button size="sm" variant="outline" className="flex-1">
-                    Gerenciar Staff
+                    Gerenciar Permissões
                   </Button>
                 </div>
               </CardContent>

@@ -8,8 +8,9 @@ import { Input } from "../../../_components/ui/input"
 import { Label } from "../../../_components/ui/label"
 import { Textarea } from "../../../_components/ui/textarea"
 import { Switch } from "../../../_components/ui/switch"
+import AdminHeader from "../../../_components/admin-header"
 import { toast } from "sonner"
-import { ArrowLeft, Building2, Save } from "lucide-react"
+import { Building2, Save } from "lucide-react"
 import Link from "next/link"
 
 export default function NewBarbershop() {
@@ -84,20 +85,12 @@ export default function NewBarbershop() {
 
   return (
     <div className="container mx-auto p-4 lg:p-6 space-y-4 lg:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/admin/barbershops">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold">Nova Barbearia</h1>
-          <p className="text-muted-foreground">
-            Crie uma nova barbearia na sua rede
-          </p>
-        </div>
-      </div>
+      <AdminHeader
+        title="Nova Barbearia"
+        subtitle="Crie uma nova barbearia na sua rede"
+        showBackButton
+        backHref="/admin/barbershops"
+      />
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "../_lib/auth"
 import { Card, CardContent, CardHeader, CardTitle } from "../_components/ui/card"
 import { Button } from "../_components/ui/button"
+import AdminHeader from "../_components/admin-header"
 import Link from "next/link"
 import { 
   Building2, 
@@ -23,28 +24,25 @@ export default async function AdminDashboard() {
 
   return (
     <div className="container mx-auto p-4 lg:p-6 space-y-4 lg:space-y-6">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold">Dashboard Administrativo</h1>
-          <p className="text-muted-foreground">
-            Gerencie sua rede de barbearias
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <Button asChild>
-            <Link href="/admin/barbershops/new">
-              <Plus className="w-4 h-4 mr-2" />
-              Nova Barbearia
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/admin/users/new">
-              <UserPlus className="w-4 h-4 mr-2" />
-              Novo Usuário
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <AdminHeader
+        title="Dashboard Administrativo"
+        subtitle="Gerencie sua rede de barbearias"
+        showBackButton
+        backHref="/"
+      >
+        <Button asChild>
+          <Link href="/admin/barbershops/new">
+            <Plus className="w-4 h-4 mr-2" />
+            Nova Barbearia
+          </Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/admin/users/new">
+            <UserPlus className="w-4 h-4 mr-2" />
+            Novo Usuário
+          </Link>
+        </Button>
+      </AdminHeader>
 
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
