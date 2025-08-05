@@ -12,6 +12,7 @@ import AdminHeader from "../../../_components/admin-header"
 import { toast } from "sonner"
 import { Building2, Save } from "lucide-react"
 import Link from "next/link"
+import { ImageUpload } from "../../../_components/ui/image-upload"
 
 export default function NewBarbershop() {
   const router = useRouter()
@@ -21,6 +22,7 @@ export default function NewBarbershop() {
     address: "",
     phones: [""],
     description: "",
+    image_url: null as string | null,
     is_active: true,
     commission_rate: 30,
     timeout_minutes: 10
@@ -166,6 +168,13 @@ export default function NewBarbershop() {
                   rows={3}
                 />
               </div>
+
+              <ImageUpload
+                label="Imagem da Barbearia"
+                value={formData.image_url}
+                onChange={(value) => setFormData({ ...formData, image_url: value })}
+                placeholder="Upload da logo ou fachada da barbearia"
+              />
             </CardContent>
           </Card>
 

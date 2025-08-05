@@ -11,6 +11,7 @@ import AdminHeader from "../../../_components/admin-header"
 import { toast } from "sonner"
 import { Users, Save } from "lucide-react"
 import Link from "next/link"
+import { ImageUpload } from "../../../_components/ui/image-upload"
 
 interface Barbershop {
   id: string
@@ -27,7 +28,8 @@ export default function NewUser() {
     phone: "",
     password: "",
     role: "barber" as 'client' | 'barber' | 'receptionist' | 'admin',
-    barbershop_id: ""
+    barbershop_id: "",
+    avatar_url: null as string | null
   })
 
   // Buscar barbearias disponíveis
@@ -165,6 +167,13 @@ export default function NewUser() {
                   Mínimo 6 caracteres
                 </p>
               </div>
+
+              <ImageUpload
+                label="Foto do Usuário"
+                value={formData.avatar_url}
+                onChange={(value) => setFormData({ ...formData, avatar_url: value })}
+                placeholder="Upload da foto profissional"
+              />
             </CardContent>
           </Card>
 
