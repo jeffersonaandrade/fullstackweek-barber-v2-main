@@ -213,6 +213,15 @@ app/
    - Histórico de atendimentos e valores
    - **Riscos e alertas**: Monitoramento de falhas e problemas
 
+### Fluxo de Trabalho do Barbeiro ⭐
+1. **Login**: Barbeiro faz login no sistema
+2. **Navegação**: Menu lateral com opção "Dashboard do Barbeiro"
+3. **Ativação**: Barbeiro ativa seu status de trabalho
+4. **Gestão da Fila**: Barbeiro vê e gerencia a fila atual
+5. **Chamar Próximo**: Barbeiro chama próximo cliente da fila
+6. **Timeout**: Barbeiro gerencia clientes que não se apresentaram
+7. **Desativação**: Barbeiro desativa status ao final do expediente
+
 ### Agendamentos
 - Horários disponíveis: 08:00 às 18:00
 - Intervalo: 30 minutos
@@ -541,6 +550,13 @@ cash_flow (
 6. **Dashboard** (`/dashboard`) - Admin/Barbeiro/Recepcionista (futuro)
 7. **Recepcionista** (`/receptionist`) - Interface do recepcionista (futuro)
 
+### Páginas do Barbeiro
+8. **Dashboard do Barbeiro** (`/dashboard/barber`) - Gerenciar fila e atendimentos ⭐
+9. **Ativação de Status** (`/dashboard/barber/activate`) - Ativar/desativar status de trabalho
+10. **Gestão de Fila** (`/dashboard/barber/queue`) - Ver e gerenciar fila atual
+11. **Chamar Próximo** (`/dashboard/barber/next`) - Chamar próximo cliente da fila
+12. **Timeout de Clientes** (`/dashboard/barber/timeout`) - Gerenciar clientes que não se apresentaram
+
 ### Páginas Admin
 8. **Admin Dashboard** (`/admin`) - Visão geral da rede ✅
 9. **Barbearias** (`/admin/barbershops`) - Gestão de barbearias ✅
@@ -558,8 +574,15 @@ cash_flow (
 21. **WhatsApp** (`/admin/whatsapp`) - Gestão de dispositivos (futuro)
 22. **Relatórios** (`/admin/reports`) - Relatórios completos (futuro)
 
+### Navegação Baseada em Roles
+- **Cliente**: Acesso à interface de agendamento e fila
+- **Barbeiro**: Menu lateral com opção "Dashboard do Barbeiro" ⭐
+- **Admin**: Acesso completo ao painel administrativo
+- **Recepcionista**: Interface específica para gestão de fila
+
 ### Componentes Principais
 - `Header` - Navegação e autenticação
+- `SidebarMenu` - Menu lateral com navegação baseada em role ⭐
 - `Search` - Busca de barbearias
 - `BarbershopItem` - Card de barbearia
 - `ServiceItem` - Card de serviço
@@ -573,6 +596,15 @@ cash_flow (
 - `AddDependentForm` - Formulário para adicionar dependente à fila
 - `DependentManagement` - Gestão de dependentes do cliente
 - `QueueTransferAlert` - Alerta de transferência para fila geral
+
+### Componentes do Barbeiro ⭐
+- `BarberDashboard` - Dashboard principal do barbeiro
+- `QueueManagement` - Gestão da fila atual
+- `StatusToggle` - Ativar/desativar status de trabalho
+- `NextCustomer` - Chamar próximo cliente da fila
+- `TimeoutManagement` - Gerenciar clientes que não se apresentaram
+- `CustomerCard` - Card com informações do cliente atual
+- `QueueStats` - Estatísticas da fila (tempo médio, pessoas na fila)
 
 ### Componentes Admin
 - `AdminHeader` - Header reutilizável para páginas admin ✅

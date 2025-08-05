@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "./ui/button"
-import { CalendarIcon, HomeIcon, LogInIcon, LogOutIcon, Settings } from "lucide-react"
+import { CalendarIcon, HomeIcon, LogInIcon, LogOutIcon, Settings, Users, Scissors } from "lucide-react"
 import { SheetClose, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet"
 import { quickSearchOptions } from "../_constants/search"
 import Link from "next/link"
@@ -65,13 +65,28 @@ const SidebarSheet = () => {
             Agendamentos
           </Link>
         </Button>
+        
+        {/* Navegação baseada em role */}
+        {data?.user?.role === 'barber' && (
+          <SheetClose asChild>
+            <Button className="justify-start gap-2" variant="ghost" asChild>
+              <Link href="/dashboard/barber">
+                <Scissors size={18} />
+                Dashboard do Barbeiro
+              </Link>
+            </Button>
+          </SheetClose>
+        )}
+        
         {data?.user?.role === 'admin' && (
-          <Button className="justify-start gap-2" variant="ghost" asChild>
-            <Link href="/admin">
-              <Settings size={18} />
-              Admin
-            </Link>
-          </Button>
+          <SheetClose asChild>
+            <Button className="justify-start gap-2" variant="ghost" asChild>
+              <Link href="/admin">
+                <Settings size={18} />
+                Admin
+              </Link>
+            </Button>
+          </SheetClose>
         )}
       </div>
 

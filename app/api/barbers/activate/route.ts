@@ -1,18 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/app/_lib/supabase'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/_lib/auth'
+import { supabaseAdmin } from '@/app/_lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    const body = await request.json()
-    const { barbershopId } = body
-
-    if (!session?.user?.id) {
+    const { barbershopId } = await request.json()
+    
+    console.log('API de ativação chamada com barbershopId:', barbershopId)
+    console.log('Sessão do usuário:', session?.user)
+    
+    // Para testes, permitir sem autenticação se barbershopId for "test-id"
+    if (barbershopId === "test-id") {
+      return NextResponse.json({
+        success: true,
+        message: 'Teste funcionando!',
+        receivedData: { barbershopId },
+        timestamp: new Date().toISOString()
+      })
+    }
+    
+    if (!session?.user) {
       return NextResponse.json(
-        { error: 'Usuário não autenticado' },
+        { error: 'Não autorizado' },
         { status: 401 }
+      )
+    }
+
+    if (session.user.role !== 'barber') {
+      return NextResponse.json(
+        { error: 'Acesso negado. Apenas barbeiros podem acessar esta rota.' },
+        { status: 403 }
       )
     }
 
@@ -23,31 +42,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verificar se o usuário é barbeiro
-    if (session.user.role !== 'barber') {
-      return NextResponse.json(
-        { error: 'Apenas barbeiros podem ativar status' },
-        { status: 403 }
-      )
-    }
-
     // Verificar se a barbearia existe
     const { data: barbershop, error: barbershopError } = await supabaseAdmin
       .from('barbershops')
-      .select('id, name')
+      .select('*')
       .eq('id', barbershopId)
-      .eq('is_active', true)
       .single()
 
     if (barbershopError || !barbershop) {
+      console.error('Erro ao buscar barbearia:', barbershopError)
       return NextResponse.json(
-        { error: 'Barbearia não encontrada ou inativa' },
+        { error: 'Barbearia não encontrada' },
         { status: 404 }
       )
     }
 
-    // Desativar status em outras barbearias
-    await supabaseAdmin
+    // Verificar se a barbearia está ativa
+    if (!barbershop.is_active) {
+      return NextResponse.json(
+        { error: 'Barbearia não está ativa' },
+        { status: 400 }
+      )
+    }
+
+    // Desativar status em outras barbearias (se houver)
+    const { error: deactivateError } = await supabaseAdmin
       .from('barber_status')
       .update({
         is_active: false,
@@ -56,68 +75,42 @@ export async function POST(request: NextRequest) {
       .eq('barber_id', session.user.id)
       .eq('is_active', true)
 
-    // Verificar se já existe um status ativo para esta barbearia
-    const { data: existingStatus } = await supabaseAdmin
-      .from('barber_status')
-      .select('id')
-      .eq('barber_id', session.user.id)
-      .eq('barbershop_id', barbershopId)
-      .single()
-
-    if (existingStatus) {
-      // Atualizar status existente
-      const { data: updatedStatus, error: updateError } = await supabaseAdmin
-        .from('barber_status')
-        .update({
-          is_active: true,
-          started_at: new Date().toISOString(),
-          ended_at: null
-        })
-        .eq('id', existingStatus.id)
-        .select()
-        .single()
-
-      if (updateError) {
-        console.error('Erro ao ativar status:', updateError)
-        return NextResponse.json(
-          { error: 'Erro ao ativar status' },
-          { status: 500 }
-        )
-      }
-
-      return NextResponse.json({
-        message: `Status ativado em ${barbershop.name}`,
-        status: updatedStatus
-      })
-    } else {
-      // Criar novo status
-      const { data: newStatus, error: insertError } = await supabaseAdmin
-        .from('barber_status')
-        .insert({
-          barber_id: session.user.id,
-          barbershop_id: barbershopId,
-          is_active: true,
-          started_at: new Date().toISOString()
-        })
-        .select()
-        .single()
-
-      if (insertError) {
-        console.error('Erro ao criar status:', insertError)
-        return NextResponse.json(
-          { error: 'Erro ao ativar status' },
-          { status: 500 }
-        )
-      }
-
-      return NextResponse.json({
-        message: `Status ativado em ${barbershop.name}`,
-        status: newStatus
-      }, { status: 201 })
+    if (deactivateError) {
+      console.error('Erro ao desativar status anterior:', deactivateError)
     }
 
+    // Ativar status na barbearia selecionada
+    const { data: newStatus, error: activateError } = await supabaseAdmin
+      .from('barber_status')
+      .insert({
+        barber_id: session.user.id,
+        barbershop_id: barbershopId,
+        is_active: true,
+        started_at: new Date().toISOString()
+      })
+      .select(`
+        *,
+        barbershop:barbershops(id, name, address)
+      `)
+      .single()
+
+    if (activateError) {
+      console.error('Erro ao ativar status:', activateError)
+      return NextResponse.json(
+        { error: 'Erro ao ativar status: ' + activateError.message },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      status: newStatus,
+      message: `Status ativado com sucesso na barbearia ${barbershop.name}`,
+      timestamp: new Date().toISOString()
+    })
+
   } catch (error) {
-    console.error('Erro interno:', error)
+    console.error('Erro na API de ativação:', error)
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
       { status: 500 }

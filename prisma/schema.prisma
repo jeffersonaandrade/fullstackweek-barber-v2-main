@@ -13,9 +13,13 @@ model User {
   email         String    @unique
   phone         String?
   image         String?
+  role          String    @default("client") // client, barber, receptionist, admin
+  barbershopId  String?   // Para recepcionistas
   accounts      Account[]
   sessions      Session[]
   bookings      Booking[]
+  barberStatus  BarberStatus[]
+  queueEntries  QueueEntry[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
