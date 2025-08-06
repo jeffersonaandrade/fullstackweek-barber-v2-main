@@ -1003,3 +1003,150 @@ Com o dashboard administrativo completo, o próximo foco é implementar o sistem
 
 *Última atualização: 2024-12-19*
 *Versão do documento: 1.2.1* 
+
+# Documentação de Desenvolvimento - FSW Barber
+
+## Componentes UI
+
+### CurrencyInput
+
+Componente de input com máscara de moeda brasileira para campos de preço.
+
+#### Características
+
+- **Formato brasileiro**: Exibe valores como "30,00" (vírgula como separador decimal)
+- **Armazenamento em centavos**: Internamente trabalha com centavos para evitar problemas de precisão
+- **Máscara automática**: Formata automaticamente ao perder foco
+- **Suporte a diferentes formatos**: Aceita entrada com vírgula (30,50), ponto (30.50) ou números inteiros (30)
+
+#### Uso
+
+```tsx
+import { CurrencyInput } from '@/app/_components/ui/currency-input'
+
+// No componente
+const [priceInCents, setPriceInCents] = useState("3000") // R$ 30,00
+
+<CurrencyInput
+  value={priceInCents}
+  onChange={(cents) => setPriceInCents(cents)}
+  placeholder="0,00"
+  required
+/>
+```
+
+#### Props
+
+| Prop | Tipo | Padrão | Descrição |
+|------|------|--------|-----------|
+| `value` | `string` | - | Valor em centavos (ex: "3000" = R$ 30,00) |
+| `onChange` | `(value: string) => void` | - | Callback que recebe valor em centavos |
+| `placeholder` | `string` | "0,00" | Placeholder do input |
+| `className` | `string` | - | Classes CSS adicionais |
+| `disabled` | `boolean` | `false` | Se o input está desabilitado |
+| `required` | `boolean` | `false` | Se o campo é obrigatório |
+| `id` | `string` | - | ID do input |
+| `name` | `string` | - | Nome do input |
+
+#### Comportamento
+
+| **Entrada do usuário** | **Exibição** | **Valor salvo (centavos)** |
+|----------------------|--------------|---------------------------|
+| `30` | `30,00` | `"3000"` |
+| `30,50` | `30,50` | `"3050"` |
+| `30.50` | `30,50` | `"3050"` |
+| `25,99` | `25,99` | `"2599"` |
+| `100` | `100,00` | `"10000"` |
+
+#### Implementação
+
+- **Estado de edição**: Controla quando o usuário está digitando para evitar interferência da formatação
+- **Formatação automática**: Aplica formatação brasileira ao perder foco
+- **Conversão inteligente**: Detecta automaticamente o formato de entrada (vírgula, ponto ou inteiro)
+- **Prefixo fixo**: Exibe "R$" como prefixo fixo no input
+
+#### Arquivo
+
+`app/_components/ui/currency-input.tsx`
+
+#### Dependências
+
+- React (useState, useEffect, useRef)
+- Input component (`./input`)
+- Utils (`@/app/_lib/utils`)
+
+---
+
+## Sprints
+
+### Sprint 6: Sistema de Serviços (Prioridade Alta)
+
+#### Tarefas Concluídas ✅
+
+- [x] Interface para configurar serviços (nome, descrição, preço)
+- [x] Categorização de serviços
+- [x] Upload de imagens para serviços
+- [x] Componente CurrencyInput para máscara de preços
+- [x] Campos adicionais: categoria, tempo estimado, status ativo
+- [x] Navegação melhorada no admin dashboard
+- [x] Migração completa de Prisma para Supabase
+- [x] Scripts para criação de dados de exemplo
+
+#### Tarefas Pendentes
+
+- [ ] Testes de integração dos serviços
+- [ ] Validação de formulários
+- [ ] Tratamento de erros de upload
+- [ ] Otimização de imagens
+
+#### Arquivos Modificados
+
+- `app/_components/ui/currency-input.tsx` (novo)
+- `app/admin/barbershops/[id]/services/new/page.tsx`
+- `app/admin/barbershops/[id]/services/[serviceId]/edit/page.tsx` (novo)
+- `app/admin/barbershops/[id]/services/page.tsx`
+- `app/api/barbershops/[id]/services/route.ts`
+- `app/api/barbershops/[id]/services/[serviceId]/route.ts`
+- `app/_lib/database.types.ts`
+- `scripts/create-sample-services.js` (novo)
+
+#### Banco de Dados
+
+```sql
+-- Adicionar campos à tabela barbershop_services
+ALTER TABLE barbershop_services 
+ADD COLUMN category VARCHAR(100) DEFAULT 'Geral',
+ADD COLUMN estimated_time INTEGER DEFAULT 30,
+ADD COLUMN is_active BOOLEAN DEFAULT true;
+
+-- Criar índice para melhor performance
+CREATE INDEX idx_barbershop_services_category ON barbershop_services(category);
+CREATE INDEX idx_barbershop_services_active ON barbershop_services(is_active);
+
+-- Adicionar comentários
+COMMENT ON COLUMN barbershop_services.category IS 'Categoria do serviço (ex: Cabelo, Barba, etc.)';
+COMMENT ON COLUMN barbershop_services.estimated_time IS 'Tempo estimado em minutos';
+COMMENT ON COLUMN barbershop_services.is_active IS 'Se o serviço está ativo para clientes';
+```
+
+#### Scripts Disponíveis
+
+```bash
+# Criar serviços de exemplo
+npm run create:sample-services
+```
+
+#### URLs Importantes
+
+- **Admin Dashboard**: `/admin`
+- **Listagem de Barbearias**: `/admin/barbershops`
+- **Serviços de uma Barbearia**: `/admin/barbershops/[id]/services`
+- **Criar Novo Serviço**: `/admin/barbershops/[id]/services/new`
+- **Editar Serviço**: `/admin/barbershops/[id]/services/[serviceId]/edit`
+
+#### Notas Técnicas
+
+- **Preços**: Armazenados em centavos (inteiro) para evitar problemas de precisão
+- **Imagens**: Upload via Supabase Storage (implementação pendente)
+- **Validação**: Campos obrigatórios: nome, preço, categoria
+- **Performance**: Índices criados para consultas por categoria e status 

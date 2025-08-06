@@ -9,7 +9,8 @@
     "lint": "next lint",
     "migrate:supabase": "ts-node scripts/migrate-to-supabase.ts",
     "create:admin": "node scripts/create-admin-user.js",
-    "add:password-column": "node scripts/add-password-column.js"
+    "add:password-column": "node scripts/add-password-column.js",
+    "create:sample-services": "node scripts/create-sample-services.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

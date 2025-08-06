@@ -116,6 +116,9 @@ export interface Database {
           description: string
           image_url: string
           price: number
+          category: string
+          estimated_time: number
+          is_active: boolean
           barbershop_id: string
           created_at: string
           updated_at: string
@@ -126,6 +129,9 @@ export interface Database {
           description: string
           image_url: string
           price: number
+          category?: string
+          estimated_time?: number
+          is_active?: boolean
           barbershop_id: string
           created_at?: string
           updated_at?: string
@@ -136,6 +142,9 @@ export interface Database {
           description?: string
           image_url?: string
           price?: number
+          category?: string
+          estimated_time?: number
+          is_active?: boolean
           barbershop_id?: string
           created_at?: string
           updated_at?: string

@@ -114,10 +114,12 @@ export default function BarbershopServicesPage() {
   }
 
   const formatPrice = (price: number) => {
+    // Converter de centavos para reais
+    const priceInReais = price / 100
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    }).format(price)
+    }).format(priceInReais)
   }
 
   const getCategoryColor = (category: string) => {
@@ -158,10 +160,11 @@ export default function BarbershopServicesPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
+        <div className="mb-4">
           <Button
             variant="outline"
             onClick={() => router.push(`/admin/barbershops/${barbershopId}`)}
+            className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
@@ -206,9 +209,12 @@ export default function BarbershopServicesPage() {
               </div>
               <div className="p-3 bg-muted rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">
-                  {formatPrice(services.reduce((total, s) => total + s.price, 0))}
+                  {services.length > 0 
+                    ? formatPrice(Math.round(services.reduce((total, s) => total + s.price, 0) / services.length))
+                    : 'R$ 0,00'
+                  }
                 </div>
-                <p className="text-sm text-muted-foreground">Valor total</p>
+                <p className="text-sm text-muted-foreground">Preço médio</p>
               </div>
             </div>
           </CardContent>

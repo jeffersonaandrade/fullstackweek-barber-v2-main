@@ -11,6 +11,7 @@ import { Textarea } from '@/app/_components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/_components/ui/select'
 import { Switch } from '@/app/_components/ui/switch'
 import { ImageUpload } from '@/app/_components/ui/image-upload'
+import { CurrencyInput } from '@/app/_components/ui/currency-input'
 import { ArrowLeft, Save, Package } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -139,7 +140,7 @@ export default function EditServicePage() {
           name: formData.name,
           description: formData.description,
           category: formData.category,
-          price: parseFloat(formData.price),
+          price: parseInt(formData.price), // formData.price já está em centavos
           estimated_time: parseInt(formData.estimated_time),
           image_url: formData.image_url,
           is_active: formData.is_active
@@ -293,13 +294,10 @@ export default function EditServicePage() {
             {/* Preço */}
             <div className="space-y-2">
               <Label htmlFor="price">Preço (R$) *</Label>
-              <Input
+              <CurrencyInput
                 id="price"
-                type="number"
-                step="0.01"
-                min="0"
                 value={formData.price}
-                onChange={(e) => handleInputChange('price', e.target.value)}
+                onChange={(value) => handleInputChange('price', value)}
                 placeholder="0,00"
                 required
               />

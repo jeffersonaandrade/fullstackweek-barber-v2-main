@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/app/_lib/supabase'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/app/_lib/auth'
 
 // GET - Buscar serviço específico
 export async function GET(
@@ -53,7 +53,15 @@ export async function PUT(
     }
 
     const { serviceId } = params
-    const { name, description, category, price, estimated_time, is_active, image_url } = await request.json()
+    const {
+      name,
+      description,
+      category,
+      price,
+      estimated_time,
+      image_url,
+      is_active
+    } = await request.json()
 
     // Validações
     if (!name || !category || !price) {
@@ -78,14 +86,14 @@ export async function PUT(
     }
 
     // Atualizar serviço
-    const { data: service, error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('barbershop_services')
       .update({
         name,
         description: description || '',
-        category,
-        price: parseFloat(price),
-        estimated_time: estimated_time || 15,
+        category: category || 'outros',
+        price: parseInt(price),
+        estimated_time: estimated_time || 30,
         image_url: image_url || '',
         is_active: is_active !== undefined ? is_active : true,
         updated_at: new Date().toISOString()
