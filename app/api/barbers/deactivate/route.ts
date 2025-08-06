@@ -61,6 +61,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Desativar fila específica da barbearia (se existir)
+    const { data: specificQueue, error: queueError } = await supabaseAdmin
+      .from('queues')
+      .update({
+        is_active: false
+      })
+      .eq('barbershop_id', activeStatus.barbershop_id)
+      .eq('queue_type', 'specific')
+      .eq('is_active', true)
+      .select()
+      .single()
+
+    if (queueError) {
+      console.error('Erro ao desativar fila específica:', queueError)
+      // Não falhar a desativação se a fila não puder ser desativada
+    } else if (specificQueue) {
+      console.log('Fila específica desativada:', specificQueue)
+    }
+
     return NextResponse.json({
       status: updatedStatus,
       message: `Status desativado com sucesso da barbearia ${activeStatus.barbershop.name}`

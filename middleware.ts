@@ -22,6 +22,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // TEMPORARIAMENTE DESABILITADO: Rate limiting para facilitar testes
+  // TODO: Reativar antes do deploy em produção
+  /*
   // Rate limiting APENAS para rotas de API e páginas dinâmicas
   if (pathname.startsWith('/api/')) {
     let rateLimitConfig = RATE_LIMIT_CONFIGS.PUBLIC
@@ -70,6 +73,7 @@ export async function middleware(request: NextRequest) {
       )
     }
   }
+  */
 
   // Verificar autenticação para rotas protegidas
   if (pathname.startsWith('/admin') || pathname.startsWith('/dashboard/barber')) {
@@ -78,63 +82,63 @@ export async function middleware(request: NextRequest) {
       secret: process.env.NEXTAUTH_SECRET 
     })
 
-    if (!token) {
-      // Log de auditoria para acesso não autorizado
-      await auditLogger.logSecurityEvent(
-        null,
-        AUDIT_ACTIONS.UNAUTHORIZED_ACCESS,
-        {
-          path: pathname,
-          method: request.method,
-          expectedRole: pathname.startsWith('/admin') ? 'admin' : 'barber',
-          actualRole: 'none'
-        },
-        'Unauthorized access attempt to protected route',
-        ip,
-        userAgent
-      )
+              if (!token) {
+       // Log de auditoria para acesso não autorizado
+       await auditLogger.logSecurityEvent(
+         null,
+         AUDIT_ACTIONS.UNAUTHORIZED_ACCESS,
+         {
+           path: pathname,
+           method: request.method,
+           expectedRole: pathname.startsWith('/admin') ? 'admin' : 'barber',
+           actualRole: 'none'
+         },
+         'Unauthorized access attempt to protected route',
+         ip,
+         userAgent
+       )
 
-      return NextResponse.redirect(new URL('/auth/signin', request.url))
-    }
+       return NextResponse.redirect(new URL('/auth/signin', request.url))
+     }
 
-    // Verificar roles específicas
-    if (pathname.startsWith('/admin') && token.role !== 'admin') {
-      await auditLogger.logSecurityEvent(
-        token.sub || null,
-        AUDIT_ACTIONS.UNAUTHORIZED_ACCESS,
-        {
-          path: pathname,
-          method: request.method,
-          expectedRole: 'admin',
-          actualRole: token.role,
-          userEmail: token.email
-        },
-        'User attempted to access admin area without proper role',
-        ip,
-        userAgent
-      )
+              // Verificar roles específicas
+     if (pathname.startsWith('/admin') && token.role !== 'admin') {
+       await auditLogger.logSecurityEvent(
+         token.sub || null,
+         AUDIT_ACTIONS.UNAUTHORIZED_ACCESS,
+         {
+           path: pathname,
+           method: request.method,
+           expectedRole: 'admin',
+           actualRole: token.role,
+           userEmail: token.email
+         },
+         'User attempted to access admin area without proper role',
+         ip,
+         userAgent
+       )
 
-      return NextResponse.redirect(new URL('/', request.url))
-    }
+       return NextResponse.redirect(new URL('/', request.url))
+     }
 
-    if (pathname.startsWith('/dashboard/barber') && token.role !== 'barber') {
-      await auditLogger.logSecurityEvent(
-        token.sub || null,
-        AUDIT_ACTIONS.UNAUTHORIZED_ACCESS,
-        {
-          path: pathname,
-          method: request.method,
-          expectedRole: 'barber',
-          actualRole: token.role,
-          userEmail: token.email
-        },
-        'User attempted to access barber dashboard without proper role',
-        ip,
-        userAgent
-      )
+     if (pathname.startsWith('/dashboard/barber') && token.role !== 'barber') {
+       await auditLogger.logSecurityEvent(
+         token.sub || null,
+         AUDIT_ACTIONS.UNAUTHORIZED_ACCESS,
+         {
+           path: pathname,
+           method: request.method,
+           expectedRole: 'barber',
+           actualRole: token.role,
+           userEmail: token.email
+         },
+         'User attempted to access barber dashboard without proper role',
+         ip,
+         userAgent
+       )
 
-      return NextResponse.redirect(new URL('/', request.url))
-    }
+       return NextResponse.redirect(new URL('/', request.url))
+     }
   }
 
   // Adicionar headers de segurança

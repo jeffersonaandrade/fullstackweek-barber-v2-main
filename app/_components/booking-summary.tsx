@@ -23,7 +23,7 @@ const BookingSummary = ({
             {Intl.NumberFormat("pt-BR", {
               style: "currency",
               currency: "BRL",
-            }).format(Number(service.price))}
+            }).format(Number(service.price) / 100)}
           </p>
         </div>
 

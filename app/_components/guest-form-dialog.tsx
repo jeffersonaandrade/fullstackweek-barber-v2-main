@@ -108,23 +108,23 @@ const GuestFormDialog = ({
       return
     }
 
-    // Se for fila específica, verificar se escolheu um barbeiro
-    if (queueType === 'specific' && activeBarbers.length > 0 && !selectedBarberId) {
-      toast.error("Escolha um barbeiro para a fila específica")
-      return
-    }
-
     setIsLoading(true)
 
     try {
       // Simular validação (pode ser expandida)
       await new Promise(resolve => setTimeout(resolve, 500))
       
+      // Para fila específica, usar automaticamente o primeiro barbeiro ativo
+      let finalSelectedBarberId = selectedBarberId
+      if (queueType === 'specific' && activeBarbers.length > 0) {
+        finalSelectedBarberId = activeBarbers[0].id
+      }
+      
       onSuccess({
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
-        selectedBarberId: selectedBarberId || undefined,
-        selectedServiceId: selectedServiceId || undefined
+        selectedBarberId: finalSelectedBarberId || undefined,
+        selectedServiceId: selectedServiceId === "none" ? undefined : selectedServiceId || undefined
       })
       
       toast.success("Dados coletados com sucesso!")
@@ -203,46 +203,38 @@ const GuestFormDialog = ({
           </div>
         </div>
 
-        {/* Seleção de barbeiro (se for fila específica e há barbeiros ativos) */}
+        {/* Informação do barbeiro (se for fila específica) */}
         {queueType === 'specific' && activeBarbers.length > 0 && (
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
               <Scissors className="h-4 w-4" />
-              Escolha seu Barbeiro *
+              Barbeiro Selecionado
             </h3>
             
-            <div className="space-y-2">
-              <Select value={selectedBarberId} onValueChange={setSelectedBarberId} disabled={isLoading}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um barbeiro" />
-                </SelectTrigger>
-                <SelectContent>
-                  {activeBarbers.map((barber) => (
-                    <SelectItem key={barber.id} value={barber.id}>
-                      <div className="flex items-center gap-2">
-                        {barber.users.avatar_url ? (
-                          <Image
-                            src={barber.users.avatar_url}
-                            alt={barber.users.name}
-                            width={20}
-                            height={20}
-                            className="rounded-full"
-                          />
-                        ) : (
-                          <div className="w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center">
-                            <User className="h-3 w-3 text-gray-500" />
-                          </div>
-                        )}
-                        <span>{barber.users.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                Escolha o barbeiro que você prefere para o atendimento
-              </p>
+            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <div className="flex items-center gap-2">
+                {activeBarbers[0].users.avatar_url ? (
+                  <Image
+                    src={activeBarbers[0].users.avatar_url}
+                    alt={activeBarbers[0].users.name}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <div className="w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center">
+                    <User className="h-4 w-4 text-blue-600" />
+                  </div>
+                )}
+                <div>
+                  <p className="font-medium text-blue-900">{activeBarbers[0].users.name}</p>
+                  <p className="text-xs text-blue-700">Barbeiro da fila específica</p>
+                </div>
+              </div>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Você será atendido por este barbeiro conforme escolhido na fila específica
+            </p>
           </div>
         )}
 
@@ -260,7 +252,7 @@ const GuestFormDialog = ({
                   <SelectValue placeholder="Selecione um serviço (opcional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum serviço específico</SelectItem>
+                  <SelectItem value="none">Nenhum serviço específico</SelectItem>
                   {services.map((service) => (
                     <SelectItem key={service.id} value={service.id}>
                       <div className="flex items-center justify-between w-full">
@@ -269,7 +261,7 @@ const GuestFormDialog = ({
                           {Intl.NumberFormat("pt-BR", {
                             style: "currency",
                             currency: "BRL",
-                          }).format(Number(service.price))}
+                          }).format(Number(service.price) / 100)}
                         </span>
                       </div>
                     </SelectItem>
@@ -292,19 +284,19 @@ const GuestFormDialog = ({
         </div>
 
         {/* Resumo da seleção */}
-        {(selectedBarberId || selectedServiceId) && (
+        {(queueType === 'specific' || (selectedServiceId && selectedServiceId !== "none")) && (
           <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
             <h4 className="text-sm font-medium text-gray-900 mb-2">Resumo da sua seleção:</h4>
             <div className="space-y-1 text-sm text-gray-700">
-              {selectedBarberId && (
+              {queueType === 'specific' && activeBarbers.length > 0 && (
                 <div className="flex items-center gap-2">
                   <Scissors className="h-3 w-3" />
                   <span>
-                    Barbeiro: {activeBarbers.find(b => b.id === selectedBarberId)?.users.name}
+                    Barbeiro: {activeBarbers[0].users.name}
                   </span>
                 </div>
               )}
-              {selectedServiceId && (
+              {selectedServiceId && selectedServiceId !== "none" && (
                 <div className="flex items-center gap-2">
                   <Package className="h-3 w-3" />
                   <span>

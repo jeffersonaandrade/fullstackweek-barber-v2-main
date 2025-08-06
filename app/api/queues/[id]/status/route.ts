@@ -13,6 +13,8 @@ export async function GET(
     const { searchParams } = new URL(request.url)
     const customerPhone = searchParams.get('phone')
 
+
+
     if (!queueId) {
       return NextResponse.json(
         { error: 'ID da fila é obrigatório' },
@@ -58,29 +60,41 @@ export async function GET(
       )
     }
 
+
+
     // Buscar entrada do cliente atual (se logado ou por telefone)
     let clientEntry = null
     if (session?.user?.id) {
-      const { data: userEntry } = await supabaseAdmin
+      // Buscar todas as entradas do usuário e pegar a mais recente
+      const { data: userEntries, error: userEntryError } = await supabaseAdmin
         .from('queue_entries')
         .select('*')
         .eq('queue_id', queueId)
         .eq('user_id', session.user.id)
         .eq('status', 'waiting')
-        .single()
+        .order('created_at', { ascending: false })
+        .limit(1)
       
-      clientEntry = userEntry
+      
+      
+      clientEntry = userEntries?.[0] || null
     } else if (customerPhone) {
-      const { data: phoneEntry } = await supabaseAdmin
+      // Buscar todas as entradas por telefone e pegar a mais recente
+      const { data: phoneEntries, error: phoneEntryError } = await supabaseAdmin
         .from('queue_entries')
         .select('*')
         .eq('queue_id', queueId)
         .eq('customer_phone', customerPhone)
         .eq('status', 'waiting')
-        .single()
+        .order('created_at', { ascending: false })
+        .limit(1)
       
-      clientEntry = phoneEntry
+      
+      
+      clientEntry = phoneEntries?.[0] || null
     }
+
+
 
     // Calcular estatísticas
     const totalWaiting = waitingEntries?.length || 0

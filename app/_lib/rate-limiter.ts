@@ -21,27 +21,27 @@ export interface RateLimitEntry {
 // Configurações de rate limiting otimizadas para melhor experiência do usuário
 export const RATE_LIMIT_CONFIGS = {
   PUBLIC: {
-    maxRequests: 1000, // 1000 requests por janela (mais permissivo para páginas públicas)
+    maxRequests: 5000, // 5000 requests por janela (aumentado para suportar muito mais tráfego público)
     windowMs: 15 * 60 * 1000, // 15 minutos
     message: 'Muitas requisições. Tente novamente em alguns minutos.'
   },
   AUTHENTICATED: {
-    maxRequests: 500, // 500 requests por janela
+    maxRequests: 4000, // 4000 requests por janela (aumentado para suportar muito mais usuários logados)
     windowMs: 15 * 60 * 1000, // 15 minutos
     message: 'Limite de requisições excedido. Tente novamente em alguns minutos.'
   },
   ADMIN: {
-    maxRequests: 1000, // 1000 requests por janela
+    maxRequests: 5000, // 5000 requests por janela (aumentado para suportar muito mais operações administrativas)
     windowMs: 15 * 60 * 1000, // 15 minutos
     message: 'Limite de requisições administrativas excedido.'
   },
   UPLOAD: {
-    maxRequests: 20, // 20 uploads por janela
+    maxRequests: 100, // 100 uploads por janela (aumentado para suportar muito mais uploads)
     windowMs: 60 * 60 * 1000, // 1 hora
     message: 'Limite de uploads excedido. Tente novamente em uma hora.'
   },
   AUTH: {
-    maxRequests: 10, // 10 tentativas de login por janela
+    maxRequests: 60, // 60 tentativas de login por janela (aumentado para suportar muito mais tentativas de login)
     windowMs: 15 * 60 * 1000, // 15 minutos
     message: 'Muitas tentativas de login. Tente novamente em 15 minutos.'
   }

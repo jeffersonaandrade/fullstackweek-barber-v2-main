@@ -11,21 +11,10 @@ const nextConfig = {
     ],
   },
   // Otimizações para reduzir warnings do webpack
-  webpack: (config, { dev, isServer }) => {
+  webpack: (config, { dev }) => {
     if (dev) {
       // Desabilitar cache em desenvolvimento para evitar warnings
       config.cache = false
-    } else {
-      // Otimizar cache em produção
-      config.cache = {
-        type: 'filesystem',
-        buildDependencies: {
-          config: [__filename],
-        },
-        cacheDirectory: '.next/cache',
-        compression: 'gzip',
-        maxAge: 172800000, // 2 dias
-      }
     }
     
     return config

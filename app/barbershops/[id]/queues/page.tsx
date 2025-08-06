@@ -97,33 +97,15 @@ export default function QueueSelectionPage() {
 
   const fetchQueues = async () => {
     try {
-      const response = await fetch(`/api/queues?barbershopId=${barbershopId}`)
+      // Usar a nova API que cria filas automaticamente
+      const response = await fetch(`/api/barbershops/${barbershopId}/queues`)
       const data = await response.json()
 
       if (response.ok) {
         if (data.queues && data.queues.length > 0) {
           setQueues(data.queues)
         } else {
-          // Se não há filas, criar uma fila padrão
-          const createResponse = await fetch('/api/queues/create-default', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ barbershopId })
-          })
-
-          if (createResponse.ok) {
-            // Buscar novamente as filas após criar
-            const refreshResponse = await fetch(`/api/queues?barbershopId=${barbershopId}`)
-            const refreshData = await refreshResponse.json()
-            
-            if (refreshResponse.ok) {
-              setQueues(refreshData.queues || [])
-            }
-          } else {
-            toast.error('Erro ao criar fila padrão')
-          }
+          toast.error('Nenhuma fila disponível')
         }
       } else {
         toast.error('Erro ao carregar filas')
@@ -199,6 +181,12 @@ export default function QueueSelectionPage() {
 
       if (response.ok) {
         toast.success(data.message)
+        
+        // Se for guest, salvar telefone no localStorage para acompanhar status
+        if (guestData?.customerPhone) {
+          localStorage.setItem('guestPhone', guestData.customerPhone)
+        }
+        
         // Redirecionar para página de status da fila
         router.push(`/queues/${queueId}/status`)
       } else {

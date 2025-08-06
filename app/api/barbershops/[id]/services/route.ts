@@ -71,24 +71,13 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Validação mais simples para GET
-    const validation = await CentralValidator.validateEndpoint({
-      requireAuth: true,
-      requireOwnership: true,
-      barbershopId: params.id
-    })
-
-    if (!validation.success) {
-      return new Response(validation.error, { 
-        status: validation.error?.includes('Unauthorized') ? 401 : 400 
-      })
-    }
-
+    // API pública - não requer autenticação para visualizar serviços
     const { data: services, error } = await supabase
       .from('barbershop_services')
       .select('*')
       .eq('barbershop_id', params.id)
-      .order('created_at', { ascending: false })
+      .eq('is_active', true) // Apenas serviços ativos
+      .order('name', { ascending: true })
 
     if (error) {
       console.error('Erro ao buscar serviços:', error)

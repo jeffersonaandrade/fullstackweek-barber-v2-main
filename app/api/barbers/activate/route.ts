@@ -102,6 +102,37 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Criar fila específica para o barbeiro (se não existir)
+    const { data: existingSpecificQueue } = await supabaseAdmin
+      .from('queues')
+      .select('id')
+      .eq('barbershop_id', barbershopId)
+      .eq('queue_type', 'specific')
+      .eq('is_active', true)
+      .single()
+
+    if (!existingSpecificQueue) {
+      const { data: specificQueue, error: queueError } = await supabaseAdmin
+        .from('queues')
+        .insert({
+          barbershop_id: barbershopId,
+          name: `Fila do ${session.user.name || 'Barbeiro'}`,
+          description: `Fila específica para atendimento com ${session.user.name || 'barbeiro'}`,
+          queue_type: 'specific',
+          is_active: true,
+          current_position: 0
+        })
+        .select()
+        .single()
+
+      if (queueError) {
+        console.error('Erro ao criar fila específica:', queueError)
+        // Não falhar a ativação se a fila não puder ser criada
+      } else {
+        console.log('Fila específica criada:', specificQueue)
+      }
+    }
+
     return NextResponse.json({
       success: true,
       status: newStatus,

@@ -51,6 +51,42 @@ export async function POST(
       )
     }
 
+    // Verificar se o usuário já está na fila (evitar duplicatas)
+    if (!isGuest && session?.user?.id) {
+      const { data: existingEntry } = await supabaseAdmin
+        .from('queue_entries')
+        .select('id, position, status')
+        .eq('queue_id', queueId)
+        .eq('user_id', session.user.id)
+        .eq('status', 'waiting')
+        .single()
+
+      if (existingEntry) {
+        return NextResponse.json(
+          { error: 'Você já está nesta fila!' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Verificar se o guest já está na fila (por telefone)
+    if (isGuest && customerPhone) {
+      const { data: existingGuestEntry } = await supabaseAdmin
+        .from('queue_entries')
+        .select('id, position, status')
+        .eq('queue_id', queueId)
+        .eq('customer_phone', customerPhone)
+        .eq('status', 'waiting')
+        .single()
+
+      if (existingGuestEntry) {
+        return NextResponse.json(
+          { error: 'Você já está nesta fila!' },
+          { status: 400 }
+        )
+      }
+    }
+
     // Buscar a próxima posição disponível na fila
     const { data: lastEntry, error: positionError } = await supabaseAdmin
       .from('queue_entries')
@@ -65,6 +101,8 @@ export async function POST(
 
     // Calcular tempo estimado (15-20 minutos por cliente)
     const estimatedTime = nextPosition * 15
+
+
 
     // Criar entrada na fila
     const { data: entry, error: insertError } = await supabaseAdmin
@@ -97,6 +135,8 @@ export async function POST(
         )
       `)
       .single()
+
+
 
     if (insertError) {
       console.error('Erro ao entrar na fila:', insertError)

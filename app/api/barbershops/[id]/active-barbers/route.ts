@@ -33,7 +33,7 @@ export async function GET(
 
     // Mapear os dados para o formato esperado pela interface
     const mappedBarbers = activeBarbers?.map(barber => ({
-      id: barber.id,
+      id: barber.barber_id, // Usar o ID do usuário, não do barber_status
       users: {
         id: barber.users?.id || barber.barber_id,
         name: barber.users?.name || 'Barbeiro',

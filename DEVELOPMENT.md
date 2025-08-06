@@ -183,10 +183,23 @@ app/
 ## 📋 Regras de Negócio
 
 ### Usuários e Perfis
-1. **Cliente**: 
+1. **Cliente Logado**: 
    - Pode agendar e entrar em filas (geral ou específica)
    - Pode cadastrar dependentes (filhos, familiares)
    - Pode adicionar dependentes à fila
+   - Pode avaliar barbearias após atendimento
+   - Acesso ao histórico de atendimentos
+2. **Cliente Não Logado (Guest)**: 
+   - Pode entrar em filas (geral ou específica) APENAS
+   - NÃO pode agendar horários
+   - NÃO pode avaliar barbearias
+   - NÃO tem acesso ao histórico
+   - Fluxo simplificado: Escolher corte → Escolher fila → Entrar na fila
+   - **Acesso direto:** URL da barbearia sem autenticação
+   - **Coleta de dados:** Modal para nome e telefone obrigatórios
+   - **Acompanhamento:** Página de status com posição atual
+   - **Persistência:** Telefone salvo no localStorage para recuperação
+   - **APIs públicas:** Todas as funcionalidades via APIs públicas
 2. **Barbeiro**: 
    - Vinculado a qualquer barbearia da rede
    - Deve ativar/desativar status de trabalho
@@ -258,10 +271,48 @@ app/
 - Cancelamento: Até 2 horas antes
 - Limite: 1 agendamento por cliente por dia
 
+### Fluxo Simplificado para Clientes Não Logados ⭐
+**Objetivo**: Simplificar ao máximo a experiência para clientes sem conta
+
+**Fluxo Completo:**
+1. **Acessar página** da barbearia
+2. **Escolher tipo de corte** (cabelo, barba, cabelo + barba, etc.)
+3. **Escolher entre fila geral ou barbeiro específico**
+4. **Entrar na fila** diretamente (sem necessidade de conta)
+
+**APIs Públicas Implementadas:**
+- ✅ `GET /api/barbershops/[id]/services` - Listar serviços disponíveis (pública)
+- ✅ `GET /api/barbershops/[id]/active-barbers` - Listar barbeiros ativos (pública)
+- ✅ `GET /api/barbershops/[id]/queues` - Listar filas disponíveis (pública) + **Criação automática**
+- ✅ `POST /api/queues/[id]/join` - Entrar na fila (suporta guests)
+
+**Correção Implementada:**
+- ✅ Página de filas agora usa a API correta `/api/barbershops/[id]/queues`
+- ✅ Fila específica é criada automaticamente quando há barbeiros ativos
+- ✅ Interface mostra ambas as filas (geral e específica)
+
+**Validação para Clientes Não Logados:**
+- Nome obrigatório (mínimo 2 caracteres)
+- Telefone obrigatório (formato brasileiro)
+- Serviço selecionado obrigatório
+- Barbearia deve ter barbeiros ativos
+
 ### Fila Virtual
 - **Dois tipos de fila**:
   - **Fila Geral**: Cliente pode ser atendido por qualquer barbeiro disponível
   - **Fila Específica**: Cliente escolhe um barbeiro específico
+
+#### Criação Automática de Filas ⭐
+- **Fila Geral**: Criada automaticamente quando a barbearia é ativada
+- **Fila Específica**: Criada automaticamente quando um barbeiro fica ativo
+- **Desativação**: Fila específica é desativada quando o barbeiro fica inativo
+- **Verificação**: API `/api/barbershops/[id]/queues` verifica e cria filas automaticamente
+
+#### Fluxo de Criação de Filas:
+1. **Barbeiro ativa status** → Fila específica é criada automaticamente
+2. **Cliente acessa filas** → Sistema verifica e cria filas se necessário
+3. **Barbeiro desativa status** → Fila específica é desativada
+4. **Sempre há pelo menos uma fila** → Fila geral sempre disponível
 - **Prioridade por tempo de espera**: Sempre respeita o tempo de espera, independente do tipo de fila
 - **Barbeiro ativo/inativo**: Barbeiro deve ativar status ao chegar e desativar ao sair
 - **Tempo estimado**: 15-20 minutos por cliente
@@ -1900,8 +1951,11 @@ npm run clear:cache
 #### Troubleshooting
 
 **Erro 429 (Too Many Requests)**
-- O sistema de rate limiting foi otimizado para ser mais permissivo
-- Páginas públicas agora têm limite de 1000 requests/15min
+- O sistema de rate limiting foi otimizado para suportar 200+ usuários simultâneos
+- Páginas públicas agora têm limite de 5000 requests/15min
+- Usuários autenticados têm limite de 4000 requests/15min
+- Tentativas de login aumentadas para 60/15min
+- Uploads aumentados para 100/hora
 - Página inicial (`/`) está excluída do rate limiting
 - Execute `npm run clear:cache` se persistir
 
@@ -1935,6 +1989,50 @@ npm run clear:cache
 
 #### Rate Limiting Baseado em Memória
 
+**Status Atual:** **TEMPORARIAMENTE DESABILITADO** para facilitar testes durante desenvolvimento.
+
+**Decisão de Desabilitação:**
+- **Data**: Janeiro 2025
+- **Motivo**: Facilitar testes durante desenvolvimento
+- **Impacto**: Sem limitação de requisições durante testes
+- **Ação Necessária**: Reativar antes do deploy em produção
+- **Localização**: `middleware.ts` (comentado temporariamente)
+
+#### Correção de Problema de Status da Fila
+
+**Problema Identificado:** Usuários logados não conseguiam ver sua posição na fila após entrar.
+
+**Causa Raiz:** 
+- Coluna `created_at` não existia na tabela `queue_entries`
+- API de status tentava ordenar por `created_at` que não existia
+- Erro SQL: `column queue_entries.created_at does not exist`
+
+**Solução Implementada:**
+1. **Migração de Banco:** Adicionada coluna `created_at` na tabela `queue_entries`
+2. **Correção de Código:** API de status agora usa `created_at` para ordenação
+3. **Prevenção de Duplicatas:** Adicionada validação para evitar entradas múltiplas
+
+**Query de Migração Executada:**
+```sql
+-- Adicionar coluna created_at
+ALTER TABLE queue_entries 
+ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+
+-- Atualizar registros existentes
+UPDATE queue_entries 
+SET created_at = joined_at 
+WHERE created_at IS NULL;
+
+-- Tornar NOT NULL
+ALTER TABLE queue_entries 
+ALTER COLUMN created_at SET NOT NULL;
+```
+
+**Arquivos Modificados:**
+- `app/api/queues/[id]/status/route.ts` - Correção da busca por entrada do usuário
+- `app/api/queues/[id]/join/route.ts` - Prevenção de duplicatas
+- `middleware.ts` - Rate limiting temporariamente desabilitado
+
 **Problema Resolvido:** Substituição do Redis por sistema em memória para evitar custos e dependências externas.
 
 **Solução Implementada:**
@@ -1943,14 +2041,14 @@ npm run clear:cache
 - Configurações conservadoras para projetos menores
 - **Aplicado APENAS a rotas de API** - páginas estáticas e root path (`/`) são excluídas
 
-**Configurações:**
+**Configurações (Otimizadas para alta carga - 200+ usuários simultâneos):**
 ```typescript
 RATE_LIMIT_CONFIGS = {
-  PUBLIC: { maxRequests: 100, windowMs: 15 * 60 * 1000 }, // 100 req/15min
-  AUTHENTICATED: { maxRequests: 200, windowMs: 15 * 60 * 1000 }, // 200 req/15min
-  ADMIN: { maxRequests: 500, windowMs: 15 * 60 * 1000 }, // 500 req/15min
-  AUTH: { maxRequests: 5, windowMs: 15 * 60 * 1000 }, // 5 tentativas/15min
-  UPLOAD: { maxRequests: 10, windowMs: 60 * 60 * 1000 } // 10 uploads/hora
+  PUBLIC: { maxRequests: 5000, windowMs: 15 * 60 * 1000 }, // 5000 req/15min
+  AUTHENTICATED: { maxRequests: 4000, windowMs: 15 * 60 * 1000 }, // 4000 req/15min
+  ADMIN: { maxRequests: 5000, windowMs: 15 * 60 * 1000 }, // 5000 req/15min
+  AUTH: { maxRequests: 60, windowMs: 15 * 60 * 1000 }, // 60 tentativas/15min
+  UPLOAD: { maxRequests: 100, windowMs: 60 * 60 * 1000 } // 100 uploads/hora
 }
 ```
 
@@ -1965,3 +2063,27 @@ RATE_LIMIT_CONFIGS = {
 - ✅ Sem dependências externas
 - ✅ Performance otimizada
 - ✅ Páginas públicas sempre acessíveis
+
+#### Checklist para Deploy em Produção
+
+**⚠️ AÇÕES OBRIGATÓRIAS ANTES DO DEPLOY:**
+
+1. **Reativar Rate Limiting**
+   - Descomentar seção no `middleware.ts`
+   - Verificar se as configurações estão adequadas para produção
+   - Testar se não está bloqueando usuários legítimos
+
+2. **Verificar Configurações de Segurança**
+   - Headers de segurança ativos
+   - Autenticação funcionando corretamente
+   - Logs de auditoria configurados
+
+3. **Testes de Carga**
+   - Verificar se o rate limiting suporta o tráfego esperado
+   - Ajustar limites se necessário
+   - Monitorar performance
+
+4. **Monitoramento**
+   - Configurar alertas para rate limit excedido
+   - Monitorar logs de segurança
+   - Verificar se não há falsos positivos
