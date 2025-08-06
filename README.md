@@ -1,44 +1,90 @@
-# Aula Zero
+# FullStackWeek Barber V2
 
-- [x] Setup do banco
-- [x] Seeding do banco (colocar dados)
-- [] Introdução ao Next.js
-- [] Tailwind e Shadcn
-- [] Git Hooks
+Sistema de gerenciamento de filas para barbearias desenvolvido durante a FullStackWeek.
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## 🚀 Deploy no Bolt AI
 
-## Getting Started
+### Pré-requisitos
 
-First, run the development server:
+1. Conta no [Bolt AI](https://bolt.dev)
+2. Projeto no Supabase configurado
+3. Variáveis de ambiente configuradas
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Passos para Deploy
+
+1. **Clone o repositório**
+   ```bash
+   git clone https://github.com/jeffersonaandrade/fullstackweek-barber-v2-main.git
+   cd fullstackweek-barber-v2-main
+   ```
+
+2. **Configure as variáveis de ambiente**
+   - Edite o arquivo `bolt.json`
+   - Substitua os valores das variáveis de ambiente pelos seus valores reais:
+     - `NEXTAUTH_URL`: URL do seu app no Bolt
+     - `NEXTAUTH_SECRET`: Chave secreta do NextAuth
+     - `SUPABASE_URL`: URL do seu projeto Supabase
+     - `SUPABASE_ANON_KEY`: Chave anônima do Supabase
+     - `SUPABASE_SERVICE_ROLE_KEY`: Chave de serviço do Supabase
+     - `DATABASE_URL`: URL do banco de dados
+
+3. **Faça deploy no Bolt AI**
+   ```bash
+   # Instale o CLI do Bolt (se ainda não tiver)
+   npm install -g @bolt/cli
+   
+   # Login no Bolt
+   bolt login
+   
+   # Deploy do projeto
+   bolt deploy
+   ```
+
+### Configuração das Variáveis de Ambiente
+
+Certifique-se de configurar as seguintes variáveis no Bolt AI:
+
+```env
+NEXTAUTH_URL=https://your-app.bolt.dev
+NEXTAUTH_SECRET=your-nextauth-secret
+SUPABASE_URL=your-supabase-url
+SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+DATABASE_URL=your-database-url
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Estrutura do Projeto
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+├── app/
+│   ├── _components/     # Componentes React
+│   ├── _lib/           # Bibliotecas e configurações
+│   ├── api/            # Rotas da API
+│   ├── barbershops/    # Páginas das barbearias
+│   └── queues/         # Páginas das filas
+├── bolt.json           # Configuração do Bolt AI
+├── Dockerfile          # Configuração do Docker
+└── package.json        # Dependências do projeto
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Funcionalidades
 
-## Learn More
+- ✅ Sistema de autenticação com NextAuth
+- ✅ Gerenciamento de filas para barbearias
+- ✅ Suporte a clientes não logados (guest)
+- ✅ Dashboard para barbeiros
+- ✅ Sistema de agendamentos
+- ✅ Integração com Supabase
 
-To learn more about Next.js, take a look at the following resources:
+### Tecnologias Utilizadas
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Frontend**: Next.js 14, React, TypeScript
+- **Styling**: Tailwind CSS, Shadcn/ui
+- **Backend**: Next.js API Routes
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: NextAuth.js
+- **Deploy**: Bolt AI
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+### Suporte
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Para dúvidas ou problemas, abra uma issue no repositório.

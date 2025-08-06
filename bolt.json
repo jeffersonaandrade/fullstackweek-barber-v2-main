@@ -1,0 +1,23 @@
+{
+  "name": "fullstackweek-barber-v2",
+  "description": "Sistema de gerenciamento de filas para barbearias",
+  "version": "1.0.0",
+  "build": {
+    "command": "npm run build",
+    "output": ".next"
+  },
+  "start": {
+    "command": "npm start"
+  },
+  "env": {
+    "NEXTAUTH_URL": "https://your-app.bolt.dev",
+    "NEXTAUTH_SECRET": "your-nextauth-secret",
+    "SUPABASE_URL": "your-supabase-url",
+    "SUPABASE_ANON_KEY": "your-supabase-anon-key",
+    "SUPABASE_SERVICE_ROLE_KEY": "your-supabase-service-role-key",
+    "DATABASE_URL": "your-database-url"
+  },
+  "ports": {
+    "3000": "http"
+  }
+}
