@@ -310,9 +310,12 @@ app/
 - Comentários opcionais
 - Média calculada automaticamente
 
-### Clientes Sem Conta (Guest)
+### Clientes Sem Conta (Guest) ⭐
 - **Recepcionista e barbeiros podem adicionar** clientes sem conta à fila
 - **Dados mínimos**: Nome e telefone
+- **Escolha de barbeiro específico**: Cliente pode escolher barbeiro preferido (quando há barbeiros ativos)
+- **Escolha de serviço**: Cliente pode informar qual serviço planeja fazer (opcional)
+- **Interface completa**: Modal com seleção de barbeiro e serviço
 - **Identificação por telefone**: Telefone como identificador principal
 - **Dependentes permitidos**: Um número pode cadastrar dependentes com nomes diferentes
 - **Verificação de duplicatas**: Sistema pergunta se é atualização ou nova pessoa
@@ -322,6 +325,7 @@ app/
 - **Dados salvos no banco** para histórico e analytics
 - **Barbeiros podem adicionar** clientes à barbearia onde estão ativos
 - **Histórico de atendimentos** mantido para clientes recorrentes
+- **Resumo da seleção**: Cliente vê resumo das escolhas antes de confirmar
 
 ### Gestão de Imagens
 - **Imagens de barbearias**: Logo/fachada da barbearia
@@ -449,7 +453,7 @@ queues (
 -- Entradas na fila
 queue_entries (
   id, queue_id, user_id, position, status, estimated_time,
-  selected_barber_id, customer_name, customer_phone, is_guest, 
+  selected_barber_id, selected_service_id, customer_name, customer_phone, is_guest, 
   parent_phone, joined_at, left_at, called_at, started_at, completed_at
 )
 
@@ -711,6 +715,81 @@ cash_flow (
 - Middleware para proteção de rotas
 - Row Level Security (RLS) no Supabase
 - Verificação de permissões por perfil
+
+### Sistema de Segurança Avançado
+
+#### 1. Central de Validação (Zod)
+```typescript
+// Validação centralizada com schemas reutilizáveis
+const validator = CentralValidator.getInstance()
+const validation = await validator.validateBarbershop(data)
+```
+
+**Benefícios:**
+- Validação consistente em toda aplicação
+- Schemas reutilizáveis
+- Mensagens de erro padronizadas
+- Cache de validação
+
+#### 2. Sistema de Logs de Auditoria Otimizado
+```typescript
+// Logs inteligentes com controle de volume
+await auditLogger.logUserAction(
+  userId,
+  AUDIT_ACTIONS.BARBERSHOP_CREATED,
+  RESOURCE_TYPES.BARBERSHOP,
+  resourceId,
+  details
+)
+```
+
+**Configurações:**
+- **Nível CRITICAL** (padrão): Apenas eventos críticos
+- **Nível IMPORTANT**: Eventos importantes + críticos  
+- **Nível ALL**: Todos os eventos (não recomendado para plano gratuito)
+- Limite de 100 logs por hora
+- Limpeza automática após 30 dias
+- Processamento em lotes
+
+#### 3. Rate Limiting Baseado em Memória
+```typescript
+// Rate limiting sem dependência de Redis
+const result = await rateLimiter.checkRateLimitWithIP(ip, config)
+```
+
+**Configurações por Tipo:**
+- **PUBLIC**: 100 req/15min
+- **AUTHENTICATED**: 200 req/15min
+- **ADMIN**: 500 req/15min
+- **AUTH**: 5 req/15min (login)
+- **UPLOAD**: 10 req/hora
+
+#### 4. Middleware de Segurança Global
+```typescript
+// Proteção automática de todas as rotas
+export async function middleware(request: NextRequest) {
+  // Rate limiting, autenticação, headers de segurança
+}
+```
+
+**Headers de Segurança:**
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `X-XSS-Protection: 1; mode=block`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+
+#### 5. Scripts de Monitoramento
+```bash
+# Configurar sistema de logs
+npm run setup:audit
+
+# Monitorar e limpar logs
+npm run cleanup:logs
+
+# Verificar ambiente
+npm run check:env
+```
 
 ### Validação
 - Zod para validação de schemas
@@ -1006,6 +1085,685 @@ Com o dashboard administrativo completo, o próximo foco é implementar o sistem
 
 # Documentação de Desenvolvimento - FSW Barber
 
+## 🔒 Segurança do Sistema
+
+### Análise de Segurança Atual
+
+#### ✅ Pontos Seguros Implementados
+
+1. **Autenticação com NextAuth.js**
+   - Sessões seguras e criptografadas
+   - Verificação de roles (admin/user)
+   - Redirecionamento automático para usuários não autenticados
+   - Proteção de rotas administrativas
+
+2. **Server Components**
+   - Código sensível executa no servidor
+   - Variáveis de ambiente protegidas
+   - Dados não expostos no cliente
+   - Lógica de negócio isolada
+
+3. **Supabase RLS (Row Level Security)**
+   - Políticas de acesso no nível do banco de dados
+   - Usuários só acessam seus próprios dados
+   - Proteção contra acesso não autorizado
+
+#### ⚠️ Vulnerabilidades Identificadas
+
+1. **API Routes sem Validação Robusta**
+   ```typescript
+   // ❌ Exemplo atual - vulnerável
+   export async function POST(request: Request) {
+     const { name, price, description } = await request.json()
+     // Sem validação de dados!
+     await supabase.insert({ name, price, description })
+   }
+   ```
+
+2. **Falta de Validação de Entrada**
+   - Preços podem ser negativos ou zero
+   - Nomes podem ser vazios ou muito longos
+   - Descrições podem conter XSS
+   - Sem sanitização de dados
+
+3. **Falta de Rate Limiting**
+   - Sem proteção contra spam de requisições
+   - Possível ataque DDoS
+   - Sem limitação de tentativas de login
+
+4. **Falta de Validação de Propriedade**
+   - Usuário pode tentar editar dados de outras barbearias
+   - Sem verificação de ownership
+   - Possível acesso cross-tenant
+
+5. **Logs de Segurança Insuficientes**
+   - Sem auditoria de ações críticas
+   - Falta de monitoramento de tentativas de acesso
+   - Sem alertas de segurança
+
+### 🛡️ Plano de Melhorias de Segurança
+
+#### Sprint 7: Implementação de Segurança (Prioridade Alta)
+
+##### Tarefas Planejadas
+
+- [ ] **Validação com Zod**
+  - Implementar schemas de validação para todas as APIs
+  - Validar entrada de dados em tempo real
+  - Sanitização automática de dados
+
+- [ ] **Middleware de Segurança**
+  - Rate limiting por IP e usuário
+  - Logs de auditoria
+  - Verificação de tokens
+  - Proteção contra CSRF
+
+- [ ] **Validação de Propriedade**
+  - Verificar ownership em todas as operações
+  - Implementar políticas de acesso por tenant
+  - Isolamento de dados entre barbearias
+
+- [ ] **Sanitização e Validação de Dados**
+  - Sanitização de HTML/JavaScript
+  - Validação de tipos e formatos
+  - Proteção contra SQL Injection
+  - Validação de uploads de arquivos
+
+- [ ] **Logs e Monitoramento**
+  - Logs de auditoria para ações críticas
+  - Monitoramento de tentativas de acesso
+  - Alertas de segurança
+  - Dashboard de segurança
+
+##### Implementações Técnicas
+
+###### 1. Central de Validação (Middleware Centralizado)
+
+**Conceito**: Criar um sistema centralizado de validação que todos os endpoints utilizam, garantindo consistência e evitando esquecimentos.
+
+**Benefícios**:
+- ✅ **Consistência**: Todas as APIs seguem o mesmo padrão
+- ✅ **Manutenibilidade**: Mudanças em um lugar só
+- ✅ **Segurança**: Não há risco de esquecer validação
+- ✅ **Performance**: Cache de validações comuns
+- ✅ **Auditoria**: Logs centralizados de todas as validações
+
+```typescript
+// app/_lib/validation/central-validator.ts
+import { z } from 'zod'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '../auth'
+import { createClient } from '@supabase/supabase-js'
+
+export interface ValidationContext {
+  userId?: string
+  userRole?: string
+  barbershopId?: string
+  serviceId?: string
+}
+
+export interface ValidationResult {
+  success: boolean
+  data?: any
+  error?: string
+  context?: ValidationContext
+}
+
+export class CentralValidator {
+  private static supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  // Validação de autenticação
+  static async validateAuth(): Promise<ValidationResult> {
+    try {
+      const session = await getServerSession(authOptions)
+      
+      if (!session?.user) {
+        return {
+          success: false,
+          error: 'Unauthorized - User not authenticated'
+        }
+      }
+
+      return {
+        success: true,
+        context: {
+          userId: session.user.id,
+          userRole: session.user.role
+        }
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Authentication validation failed'
+      }
+    }
+  }
+
+  // Validação de propriedade (ownership)
+  static async validateOwnership(
+    barbershopId: string, 
+    userId: string
+  ): Promise<ValidationResult> {
+    try {
+      const { data: barbershop } = await this.supabase
+        .from('barbershops')
+        .select('id, owner_id')
+        .eq('id', barbershopId)
+        .single()
+
+      if (!barbershop || barbershop.owner_id !== userId) {
+        return {
+          success: false,
+          error: 'Forbidden - User does not own this resource'
+        }
+      }
+
+      return {
+        success: true,
+        context: { barbershopId }
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Ownership validation failed'
+      }
+    }
+  }
+
+  // Validação de dados com Zod
+  static validateData<T>(
+    schema: z.ZodSchema<T>, 
+    data: any
+  ): ValidationResult {
+    try {
+      const validatedData = schema.parse(data)
+      return {
+        success: true,
+        data: validatedData
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return {
+          success: false,
+          error: `Validation failed: ${error.errors.map(e => e.message).join(', ')}`
+        }
+      }
+      return {
+        success: false,
+        error: 'Data validation failed'
+      }
+    }
+  }
+
+  // Validação completa para endpoints
+  static async validateEndpoint<T>({
+    requireAuth = true,
+    requireOwnership = false,
+    barbershopId,
+    schema,
+    data
+  }: {
+    requireAuth?: boolean
+    requireOwnership?: boolean
+    barbershopId?: string
+    schema?: z.ZodSchema<T>
+    data?: any
+  }): Promise<ValidationResult> {
+    const context: ValidationContext = {}
+
+    // 1. Validação de autenticação
+    if (requireAuth) {
+      const authResult = await this.validateAuth()
+      if (!authResult.success) {
+        return authResult
+      }
+      Object.assign(context, authResult.context)
+    }
+
+    // 2. Validação de propriedade
+    if (requireOwnership && barbershopId && context.userId) {
+      const ownershipResult = await this.validateOwnership(barbershopId, context.userId)
+      if (!ownershipResult.success) {
+        return ownershipResult
+      }
+      Object.assign(context, ownershipResult.context)
+    }
+
+    // 3. Validação de dados
+    if (schema && data) {
+      const dataResult = this.validateData(schema, data)
+      if (!dataResult.success) {
+        return dataResult
+      }
+      return {
+        success: true,
+        data: dataResult.data,
+        context
+      }
+    }
+
+    return {
+      success: true,
+      context
+    }
+  }
+
+  // Rate limiting
+  static async validateRateLimit(
+    identifier: string, 
+    limit: number = 100, 
+    windowMs: number = 15 * 60 * 1000 // 15 minutos
+  ): Promise<ValidationResult> {
+    // Implementação com Redis ou cache em memória
+    // Por enquanto, retorna sucesso
+    return { success: true }
+  }
+}
+```
+
+###### 2. Schemas de Validação (Zod)
+
+```typescript
+// app/_lib/validations/service.ts
+import { z } from 'zod'
+
+export const ServiceSchema = z.object({
+  name: z.string()
+    .min(1, 'Nome é obrigatório')
+    .max(100, 'Nome muito longo'),
+  description: z.string()
+    .max(500, 'Descrição muito longa')
+    .optional(),
+  price: z.number()
+    .positive('Preço deve ser positivo')
+    .max(1000000, 'Preço muito alto'), // R$ 10.000,00
+  category: z.enum(['cabelo', 'barba', 'sobrancelha', 'hidratacao', 'acabamento']),
+  estimated_time: z.number()
+    .positive('Tempo deve ser positivo')
+    .max(480, 'Tempo máximo 8 horas'), // 480 minutos
+  is_active: z.boolean(),
+  image_url: z.string().url().optional()
+})
+
+export const BarbershopSchema = z.object({
+  name: z.string().min(1).max(200),
+  address: z.string().min(1).max(500),
+  phones: z.array(z.string().regex(/^\+?[\d\s\-\(\)]+$/))
+})
+```
+
+###### 3. Middleware de Segurança
+
+```typescript
+// middleware.ts
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { getToken } from 'next-auth/jwt'
+
+export async function middleware(request: NextRequest) {
+  // Rate limiting
+  const ip = request.ip || 'unknown'
+  const rateLimit = await checkRateLimit(ip)
+  
+  if (!rateLimit.allowed) {
+    return new NextResponse('Too Many Requests', { status: 429 })
+  }
+
+  // Verificação de autenticação para rotas protegidas
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    const token = await getToken({ req: request })
+    
+    if (!token || token.role !== 'admin') {
+      return NextResponse.redirect(new URL('/auth/signin', request.url))
+    }
+  }
+
+  // Logs de auditoria
+  await logSecurityEvent({
+    ip,
+    path: request.nextUrl.pathname,
+    method: request.method,
+    userAgent: request.headers.get('user-agent')
+  })
+
+  return NextResponse.next()
+}
+```
+
+###### 4. Validação de Propriedade
+
+```typescript
+// app/_lib/auth/ownership.ts
+export async function validateBarbershopOwnership(
+  barbershopId: string, 
+  userId: string
+) {
+  const { data: barbershop } = await supabase
+    .from('barbershops')
+    .select('id, owner_id')
+    .eq('id', barbershopId)
+    .single()
+
+  if (!barbershop || barbershop.owner_id !== userId) {
+    throw new Error('Unauthorized access to barbershop')
+  }
+
+  return barbershop
+}
+```
+
+###### 5. API Route Segura com Central de Validação
+
+```typescript
+// app/api/admin/barbershops/route.ts
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "../../../_lib/auth"
+import { supabaseAdmin } from "../../../_lib/supabase"
+import { CentralValidator } from "../../../_lib/validation/central-validator"
+import { AuditLogger, AUDIT_ACTIONS, RESOURCE_TYPES } from "../../../_lib/audit-logger"
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    
+    // Usar central de validação
+    const validator = CentralValidator.getInstance()
+    const validation = await validator.validateBarbershop(body)
+    
+    if (!validation.success) {
+      return NextResponse.json({ 
+        error: 'Dados inválidos', 
+        details: validation.errors 
+      }, { status: 400 })
+    }
+
+    const validatedData = validation.data
+
+    const { data: barbershop, error } = await supabaseAdmin
+      .from('barbershops')
+      .insert({
+        ...validatedData,
+        phones: validatedData.phones.filter((phone: string) => phone.trim() !== ""),
+        admin_id: session.user.id
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Erro ao criar barbearia:', error)
+      return NextResponse.json({ error: 'Erro ao criar barbearia' }, { status: 500 })
+    }
+
+    // Log de auditoria
+    const auditLogger = AuditLogger.getInstance()
+    await auditLogger.logUserAction(
+      session.user.id,
+      session.user.email,
+      AUDIT_ACTIONS.BARBERSHOP_CREATED,
+      RESOURCE_TYPES.BARBERSHOP,
+      barbershop.id,
+      { barbershopData: validatedData },
+      request.headers.get('x-forwarded-for') || request.ip,
+      request.headers.get('user-agent')
+    )
+
+    return NextResponse.json(barbershop, { status: 201 })
+  } catch (error) {
+    console.error('Erro inesperado:', error)
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
+  }
+}
+```
+
+###### 6. Sistema de Logs de Auditoria
+
+```typescript
+// app/_lib/audit-logger.ts
+export class AuditLogger {
+  async logUserAction(
+    userId: string,
+    userEmail: string,
+    action: string,
+    resourceType: string,
+    resourceId?: string,
+    details?: Record<string, any>,
+    ipAddress?: string,
+    userAgent?: string
+  ): Promise<void> {
+    // Implementação para salvar logs no banco
+  }
+}
+
+// Ações comuns
+export const AUDIT_ACTIONS = {
+  USER_LOGIN: 'user_login',
+  BARBERSHOP_CREATED: 'barbershop_created',
+  UNAUTHORIZED_ACCESS: 'unauthorized_access',
+  RATE_LIMIT_EXCEEDED: 'rate_limit_exceeded'
+} as const
+```
+
+###### 7. Rate Limiting com Redis
+
+```typescript
+// app/_lib/rate-limiter.ts
+export class RateLimiter {
+  async checkRateLimitWithIP(
+    ip: string,
+    config: RateLimitConfig
+  ): Promise<RateLimitResult> {
+    // Implementação com cache em memória (produção: Redis)
+  }
+}
+
+// Configurações predefinidas
+export const RATE_LIMIT_CONFIGS = {
+  PUBLIC: { windowMs: 15 * 60 * 1000, maxRequests: 50 },
+  AUTHENTICATED: { windowMs: 15 * 60 * 1000, maxRequests: 100 },
+  ADMIN: { windowMs: 15 * 60 * 1000, maxRequests: 200 },
+  AUTH: { windowMs: 15 * 60 * 1000, maxRequests: 5 }
+} as const
+```
+
+###### 8. Middleware de Segurança Global
+
+```typescript
+// middleware.ts
+export async function middleware(request: NextRequest) {
+  // Rate limiting baseado no tipo de endpoint
+  const rateLimit = await rateLimiter.checkRateLimitWithIP(ip, rateLimitConfig)
+  
+  // Headers de segurança
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('X-XSS-Protection', '1; mode=block')
+  
+  // Verificação de autenticação para rotas protegidas
+  if (path.startsWith('/admin')) {
+    const token = await getToken({ req: request })
+    if (!token || token.role !== 'admin') {
+      await auditLogger.logSecurityEvent(AUDIT_ACTIONS.UNAUTHORIZED_ACCESS, {...})
+      return NextResponse.redirect(new URL('/auth/signin', request.url))
+    }
+  }
+  
+  return response
+}
+```
+
+```typescript
+// app/api/barbershops/[id]/services/route.ts
+import { NextResponse } from 'next/server'
+import { CentralValidator } from '@/app/_lib/validation/central-validator'
+import { ServiceSchema } from '@/app/_lib/validation/schemas'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+export async function POST(
+  request: Request, 
+  { params }: { params: { id: string } }
+) {
+  try {
+    // 1. Validação centralizada
+    const body = await request.json()
+    const validation = await CentralValidator.validateEndpoint({
+      requireAuth: true,
+      requireOwnership: true,
+      barbershopId: params.id,
+      schema: ServiceSchema,
+      data: body
+    })
+
+    if (!validation.success) {
+      return new Response(validation.error, { 
+        status: validation.error?.includes('Unauthorized') ? 401 : 400 
+      })
+    }
+
+    const { data: validatedData, context } = validation
+
+    // 2. Sanitização (opcional, já validado pelo Zod)
+    const sanitizedData = {
+      ...validatedData,
+      barbershop_id: params.id
+    }
+
+    // 3. Inserção segura
+    const { data, error } = await supabase
+      .from('barbershop_services')
+      .insert(sanitizedData)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    // 4. Log de auditoria
+    await logAuditEvent({
+      action: 'CREATE_SERVICE',
+      userId: context.userId!,
+      barbershopId: params.id,
+      serviceId: data.id,
+      details: { name: data.name, price: data.price }
+    })
+
+    return NextResponse.json({ service: data })
+
+  } catch (error) {
+    console.error('Erro ao criar serviço:', error)
+    return new Response('Internal Server Error', { status: 500 })
+  }
+}
+
+export async function GET(
+  request: Request, 
+  { params }: { params: { id: string } }
+) {
+  try {
+    // Validação mais simples para GET
+    const validation = await CentralValidator.validateEndpoint({
+      requireAuth: true,
+      requireOwnership: true,
+      barbershopId: params.id
+    })
+
+    if (!validation.success) {
+      return new Response(validation.error, { 
+        status: validation.error?.includes('Unauthorized') ? 401 : 400 
+      })
+    }
+
+    const { data: services, error } = await supabase
+      .from('barbershop_services')
+      .select('*')
+      .eq('barbershop_id', params.id)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    return NextResponse.json({ services })
+
+  } catch (error) {
+    console.error('Erro ao buscar serviços:', error)
+    return new Response('Internal Server Error', { status: 500 })
+  }
+}
+```
+
+###### 6. Exemplo de Uso em Outros Endpoints
+
+```typescript
+// Qualquer endpoint pode usar a mesma validação
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  const validation = await CentralValidator.validateEndpoint({
+    requireAuth: true,
+    requireOwnership: true,
+    barbershopId: params.id,
+    schema: ServiceUpdateSchema,
+    data: await request.json()
+  })
+
+  if (!validation.success) {
+    return new Response(validation.error, { status: 400 })
+  }
+
+  // Lógica do endpoint...
+}
+
+// Endpoint público (sem autenticação)
+export async function GET(request: Request) {
+  const validation = await CentralValidator.validateEndpoint({
+    requireAuth: false // Não requer autenticação
+  })
+
+  // Lógica do endpoint...
+}
+```
+
+##### Dependências Necessárias
+
+```json
+{
+  "dependencies": {
+    "zod": "^3.22.4",
+    "isomorphic-dompurify": "^2.9.3",
+    "rate-limiter-flexible": "^3.0.8"
+  }
+}
+```
+
+##### Arquivos a Serem Criados/Modificados
+
+- `app/_lib/validations/` - Schemas de validação
+- `app/_lib/security/` - Utilitários de segurança
+- `app/_lib/auth/ownership.ts` - Validação de propriedade
+- `middleware.ts` - Middleware de segurança
+- `app/_lib/audit/` - Sistema de logs
+- Todas as API routes - Adicionar validação
+
+##### Benefícios Esperados
+
+1. **Proteção contra ataques** - XSS, SQL Injection, CSRF
+2. **Dados consistentes** - Validação em tempo real
+3. **Auditoria completa** - Rastreamento de todas as ações
+4. **Performance** - Rate limiting e cache
+5. **Conformidade** - Logs para auditoria legal
+
+---
+
 ## Componentes UI
 
 ### CurrencyInput
@@ -1134,7 +1892,29 @@ COMMENT ON COLUMN barbershop_services.is_active IS 'Se o serviço está ativo pa
 ```bash
 # Criar serviços de exemplo
 npm run create:sample-services
+
+# Limpar cache do Next.js (resolver problemas de performance)
+npm run clear:cache
 ```
+
+#### Troubleshooting
+
+**Erro 429 (Too Many Requests)**
+- O sistema de rate limiting foi otimizado para ser mais permissivo
+- Páginas públicas agora têm limite de 1000 requests/15min
+- Página inicial (`/`) está excluída do rate limiting
+- Execute `npm run clear:cache` se persistir
+
+**Warning do Webpack**
+- Cache otimizado para desenvolvimento e produção
+- Warnings de serialização reduzidos
+- Execute `npm run clear:cache` para limpar cache
+
+**Erro 400 - Usuário Guest na Fila**
+- Modal implementado para coletar nome e telefone de usuários não logados
+- Validação de campos obrigatórios antes de entrar na fila
+- Componente `GuestFormDialog` criado para melhor UX
+- API `/api/queues/[id]/join` agora recebe dados corretos para guests
 
 #### URLs Importantes
 
@@ -1150,3 +1930,38 @@ npm run create:sample-services
 - **Imagens**: Upload via Supabase Storage (implementação pendente)
 - **Validação**: Campos obrigatórios: nome, preço, categoria
 - **Performance**: Índices criados para consultas por categoria e status 
+
+### Sistema de Segurança Avançado
+
+#### Rate Limiting Baseado em Memória
+
+**Problema Resolvido:** Substituição do Redis por sistema em memória para evitar custos e dependências externas.
+
+**Solução Implementada:**
+- Rate limiting baseado em `Map` em memória
+- Limpeza automática a cada 30 minutos para evitar vazamento de memória
+- Configurações conservadoras para projetos menores
+- **Aplicado APENAS a rotas de API** - páginas estáticas e root path (`/`) são excluídas
+
+**Configurações:**
+```typescript
+RATE_LIMIT_CONFIGS = {
+  PUBLIC: { maxRequests: 100, windowMs: 15 * 60 * 1000 }, // 100 req/15min
+  AUTHENTICATED: { maxRequests: 200, windowMs: 15 * 60 * 1000 }, // 200 req/15min
+  ADMIN: { maxRequests: 500, windowMs: 15 * 60 * 1000 }, // 500 req/15min
+  AUTH: { maxRequests: 5, windowMs: 15 * 60 * 1000 }, // 5 tentativas/15min
+  UPLOAD: { maxRequests: 10, windowMs: 60 * 60 * 1000 } // 10 uploads/hora
+}
+```
+
+**Exclusões do Rate Limiting:**
+- Página inicial (`/`)
+- Assets estáticos (`/_next/`, `/favicon.ico`, `/public/`)
+- Arquivos com extensão
+- Todas as páginas não-API
+
+**Benefícios:**
+- ✅ Zero custo (sem Redis)
+- ✅ Sem dependências externas
+- ✅ Performance otimizada
+- ✅ Páginas públicas sempre acessíveis

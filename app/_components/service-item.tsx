@@ -289,7 +289,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
         onOpenChange={(open) => setSignInDialogIsOpen(open)}
       >
         <DialogContent className="w-[90%]" aria-describedby="signin-dialog-description">
-          <SignInDialog />
+          <SignInDialog onSuccess={() => setSignInDialogIsOpen(false)} />
         </DialogContent>
       </Dialog>
     </>

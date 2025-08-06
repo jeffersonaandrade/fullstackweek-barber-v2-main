@@ -14,6 +14,54 @@ import {
   Plus,
   UserPlus
 } from "lucide-react"
+import { createClient } from '@supabase/supabase-js'
+
+// Função para buscar estatísticas do banco
+async function getDashboardStats() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  try {
+    // Contar barbearias
+    const { count: barbershopsCount } = await supabase
+      .from('barbershops')
+      .select('*', { count: 'exact', head: true })
+
+    // Contar usuários
+    const { count: usersCount } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+
+    // Contar agendamentos
+    const { count: bookingsCount } = await supabase
+      .from('bookings')
+      .select('*', { count: 'exact', head: true })
+
+    // Calcular receita total (soma dos preços dos agendamentos)
+    const { data: bookings } = await supabase
+      .from('bookings')
+      .select('total_amount')
+
+    const totalRevenue = bookings?.reduce((sum, booking) => sum + (booking.total_amount || 0), 0) || 0
+
+    return {
+      barbershops: barbershopsCount || 0,
+      users: usersCount || 0,
+      bookings: bookingsCount || 0,
+      revenue: totalRevenue
+    }
+  } catch (error) {
+    console.error('Erro ao buscar estatísticas:', error)
+    return {
+      barbershops: 0,
+      users: 0,
+      bookings: 0,
+      revenue: 0
+    }
+  }
+}
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions)
@@ -21,6 +69,9 @@ export default async function AdminDashboard() {
   if (!session?.user || session.user.role !== 'admin') {
     redirect('/')
   }
+
+  // Buscar estatísticas reais
+  const stats = await getDashboardStats()
 
   return (
     <div className="container mx-auto p-4 lg:p-6 space-y-4 lg:space-y-6">
@@ -52,7 +103,7 @@ export default async function AdminDashboard() {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{stats.barbershops}</div>
             <p className="text-xs text-muted-foreground">
               +0% em relação ao mês passado
             </p>
@@ -65,9 +116,9 @@ export default async function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1</div>
+            <div className="text-2xl font-bold">{stats.users}</div>
             <p className="text-xs text-muted-foreground">
-              +1% em relação ao mês passado
+              +0% em relação ao mês passado
             </p>
           </CardContent>
         </Card>
@@ -78,7 +129,7 @@ export default async function AdminDashboard() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{stats.bookings}</div>
             <p className="text-xs text-muted-foreground">
               +0% em relação ao mês passado
             </p>
@@ -91,7 +142,12 @@ export default async function AdminDashboard() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">R$ 0</div>
+            <div className="text-2xl font-bold">
+              {new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+              }).format(stats.revenue / 100)}
+            </div>
             <p className="text-xs text-muted-foreground">
               +0% em relação ao mês passado
             </p>

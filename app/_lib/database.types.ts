@@ -267,6 +267,7 @@ export interface Database {
           status: 'waiting' | 'called' | 'in_service' | 'completed' | 'left' | 'timeout'
           estimated_time: number | null
           selected_barber_id: string | null
+          selected_service_id: string | null
           customer_name: string | null
           customer_phone: string | null
           is_guest: boolean
@@ -287,6 +288,7 @@ export interface Database {
           status?: 'waiting' | 'called' | 'in_service' | 'completed' | 'left' | 'timeout'
           estimated_time?: number | null
           selected_barber_id?: string | null
+          selected_service_id?: string | null
           customer_name?: string | null
           customer_phone?: string | null
           is_guest?: boolean
@@ -307,6 +309,7 @@ export interface Database {
           status?: 'waiting' | 'called' | 'in_service' | 'completed' | 'left' | 'timeout'
           estimated_time?: number | null
           selected_barber_id?: string | null
+          selected_service_id?: string | null
           customer_name?: string | null
           customer_phone?: string | null
           is_guest?: boolean
@@ -339,6 +342,13 @@ export interface Database {
             columns: ["selected_barber_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_entries_selected_service_id_fkey"
+            columns: ["selected_service_id"]
+            isOneToOne: false
+            referencedRelation: "barbershop_services"
             referencedColumns: ["id"]
           }
         ]

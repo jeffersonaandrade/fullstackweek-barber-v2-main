@@ -11,7 +11,7 @@ export async function POST(
     const session = await getServerSession(authOptions)
     const queueId = params.id
     const body = await request.json()
-    const { selectedBarberId, customerName, customerPhone, isGuest, parentPhone } = body
+    const { selectedBarberId, selectedServiceId, customerName, customerPhone, isGuest, parentPhone } = body
 
     if (!queueId) {
       return NextResponse.json(
@@ -76,6 +76,7 @@ export async function POST(
         status: 'waiting',
         estimated_time: estimatedTime,
         selected_barber_id: selectedBarberId,
+        selected_service_id: selectedServiceId,
         customer_name: isGuest ? customerName : null,
         customer_phone: isGuest ? customerPhone : null,
         is_guest: isGuest,

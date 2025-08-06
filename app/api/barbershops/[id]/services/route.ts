@@ -1,125 +1,104 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/app/_lib/supabase'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/_lib/auth'
+import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { CentralValidator } from '@/app/_lib/validation/central-validator'
+import { ServiceSchema } from '@/app/_lib/validation/schemas'
 
-// GET - Listar serviços da barbearia
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const barbershopId = params.id
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
-    const { data: services, error } = await supabaseAdmin
-      .from('barbershop_services')
-      .select('*')
-      .eq('barbershop_id', barbershopId)
-      .eq('is_active', true)
-      .order('category', { ascending: true })
-      .order('name', { ascending: true })
-
-    if (error) {
-      console.error('Erro ao buscar serviços:', error)
-      return NextResponse.json(
-        { error: 'Erro ao buscar serviços' },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json({
-      services: services || []
-    })
-  } catch (error) {
-    console.error('Erro interno:', error)
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    )
-  }
-}
-
-// POST - Criar novo serviço
 export async function POST(
-  request: NextRequest,
+  request: Request, 
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user || session.user.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Não autorizado' },
-        { status: 401 }
-      )
-    }
+    // 1. Validação centralizada
+    const body = await request.json()
+    const validation = await CentralValidator.validateEndpoint({
+      requireAuth: true,
+      requireOwnership: true,
+      barbershopId: params.id,
+      schema: ServiceSchema,
+      data: body
+    })
 
-    const barbershopId = params.id
-    const {
-      name,
-      description,
-      category,
-      price,
-      estimated_time,
-      image_url,
-      is_active
-    } = await request.json()
-
-    // Validações
-    if (!name || !category || !price) {
-      return NextResponse.json(
-        { error: 'Nome, categoria e preço são obrigatórios' },
-        { status: 400 }
-      )
-    }
-
-    // Verificar se a barbearia existe
-    const { data: barbershop, error: barbershopError } = await supabaseAdmin
-      .from('barbershops')
-      .select('id')
-      .eq('id', barbershopId)
-      .single()
-
-    if (barbershopError || !barbershop) {
-      return NextResponse.json(
-        { error: 'Barbearia não encontrada' },
-        { status: 404 }
-      )
-    }
-
-    // Criar serviço
-    const { data, error } = await supabaseAdmin
-      .from('barbershop_services')
-      .insert({
-        barbershop_id: barbershopId,
-        name,
-        description: description || '',
-        category: category || 'outros',
-        price: parseInt(price),
-        estimated_time: estimated_time || 30,
-        image_url: image_url || '',
-        is_active: is_active !== undefined ? is_active : true
+    if (!validation.success) {
+      return new Response(validation.error, { 
+        status: validation.error?.includes('Unauthorized') ? 401 : 400 
       })
+    }
+
+    const { data: validatedData, context } = validation
+
+    // 2. Preparar dados para inserção
+    const serviceData = {
+      ...validatedData,
+      barbershop_id: params.id
+    }
+
+    // 3. Inserção segura
+    const { data, error } = await supabase
+      .from('barbershop_services')
+      .insert(serviceData)
       .select()
       .single()
 
     if (error) {
-      console.error('Erro ao criar serviço:', error)
-      return NextResponse.json(
-        { error: 'Erro ao criar serviço' },
-        { status: 500 }
-      )
+      console.error('Erro ao inserir serviço:', error)
+      return new Response('Erro interno do servidor', { status: 500 })
     }
 
-    return NextResponse.json({
-      message: 'Serviço criado com sucesso',
-      service: data
-    }, { status: 201 })
+    // 4. Log de auditoria (implementar depois)
+    // await logAuditEvent({
+    //   action: 'CREATE_SERVICE',
+    //   userId: context.userId!,
+    //   barbershopId: params.id,
+    //   serviceId: data.id,
+    //   details: { name: data.name, price: data.price }
+    // })
+
+    return NextResponse.json({ service: data })
+
   } catch (error) {
-    console.error('Erro interno:', error)
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    )
+    console.error('Erro ao criar serviço:', error)
+    return new Response('Erro interno do servidor', { status: 500 })
+  }
+}
+
+export async function GET(
+  request: Request, 
+  { params }: { params: { id: string } }
+) {
+  try {
+    // Validação mais simples para GET
+    const validation = await CentralValidator.validateEndpoint({
+      requireAuth: true,
+      requireOwnership: true,
+      barbershopId: params.id
+    })
+
+    if (!validation.success) {
+      return new Response(validation.error, { 
+        status: validation.error?.includes('Unauthorized') ? 401 : 400 
+      })
+    }
+
+    const { data: services, error } = await supabase
+      .from('barbershop_services')
+      .select('*')
+      .eq('barbershop_id', params.id)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Erro ao buscar serviços:', error)
+      return new Response('Erro interno do servidor', { status: 500 })
+    }
+
+    return NextResponse.json({ services })
+
+  } catch (error) {
+    console.error('Erro ao buscar serviços:', error)
+    return new Response('Erro interno do servidor', { status: 500 })
   }
 } 

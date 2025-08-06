@@ -10,10 +10,17 @@ import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
 import { signOut, useSession } from "next-auth/react"
 import { Avatar, AvatarImage } from "./ui/avatar"
 import SignInDialog from "./sign-in-dialog"
+import { useState } from "react"
 
 const SidebarSheet = () => {
   const { data } = useSession()
+  const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false)
+  
   const handleLogoutClick = () => signOut()
+  
+  const handleSignInSuccess = () => {
+    setIsSignInDialogOpen(false)
+  }
 
   return (
     <SheetContent className="overflow-y-auto">
@@ -36,14 +43,14 @@ const SidebarSheet = () => {
         ) : (
           <>
             <h2 className="font-bold">Olá, faça seu login!</h2>
-            <Dialog>
+            <Dialog open={isSignInDialogOpen} onOpenChange={setIsSignInDialogOpen}>
               <DialogTrigger asChild>
                 <Button size="icon">
                   <LogInIcon />
                 </Button>
               </DialogTrigger>
               <DialogContent className="w-[90%]" aria-describedby="signin-dialog-description">
-                <SignInDialog />
+                <SignInDialog onSuccess={handleSignInSuccess} />
               </DialogContent>
             </Dialog>
           </>

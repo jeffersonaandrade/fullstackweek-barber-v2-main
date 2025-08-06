@@ -8,6 +8,8 @@ import { Button } from '@/app/_components/ui/button'
 import { Badge } from '@/app/_components/ui/badge'
 import { ArrowLeft, Users, Clock, MapPin, Phone, AlertCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
+import { Dialog, DialogContent, DialogTrigger } from '@/app/_components/ui/dialog'
+import GuestFormDialog from '@/app/_components/guest-form-dialog'
 
 interface Queue {
   id: string
@@ -45,6 +47,8 @@ export default function QueueSelectionPage() {
   const [loading, setLoading] = useState(true)
   const [joiningQueue, setJoiningQueue] = useState<string | null>(null)
   const [barbershopInfo, setBarbershopInfo] = useState<any>(null)
+  const [guestDialogOpen, setGuestDialogOpen] = useState(false)
+  const [selectedQueue, setSelectedQueue] = useState<{ id: string; type: 'general' | 'specific'; name: string } | null>(null)
 
   useEffect(() => {
     if (barbershopId) {
@@ -130,7 +134,24 @@ export default function QueueSelectionPage() {
     }
   }
 
-  const handleJoinQueue = async (queueId: string, queueType: 'general' | 'specific') => {
+  const handleJoinQueue = async (queueId: string, queueType: 'general' | 'specific', queueName: string) => {
+    // Se não estiver logado, mostrar modal para coletar dados
+    if (!session?.user?.id) {
+      setSelectedQueue({ id: queueId, type: queueType, name: queueName })
+      setGuestDialogOpen(true)
+      return
+    }
+
+    // Se estiver logado, entrar diretamente na fila
+    await joinQueue(queueId, queueType)
+  }
+
+  const joinQueue = async (queueId: string, queueType: 'general' | 'specific', guestData?: { 
+    customerName: string; 
+    customerPhone: string;
+    selectedBarberId?: string;
+    selectedServiceId?: string;
+  }) => {
     setJoiningQueue(queueId)
 
     try {
@@ -138,16 +159,32 @@ export default function QueueSelectionPage() {
         isGuest: !session?.user?.id
       }
 
-      // Se for fila específica, precisa escolher barbeiro
-      if (queueType === 'specific') {
+      // Se for guest, adicionar dados do cliente
+      if (guestData) {
+        body.customerName = guestData.customerName
+        body.customerPhone = guestData.customerPhone
+        
+        // Adicionar barbeiro selecionado se fornecido
+        if (guestData.selectedBarberId) {
+          body.selectedBarberId = guestData.selectedBarberId
+        }
+        
+        // Adicionar serviço selecionado se fornecido
+        if (guestData.selectedServiceId) {
+          body.selectedServiceId = guestData.selectedServiceId
+        }
+      }
+
+      // Se for fila específica e não foi selecionado barbeiro, usar o primeiro disponível
+      if (queueType === 'specific' && !body.selectedBarberId) {
         if (activeBarbers.length === 0) {
           toast.error('Nenhum barbeiro ativo no momento')
           setJoiningQueue(null)
           return
         }
         
-        // Por enquanto, usar o primeiro barbeiro ativo
-        body.barberId = activeBarbers[0].id
+        // Usar o primeiro barbeiro ativo
+        body.selectedBarberId = activeBarbers[0].id
       }
 
       const response = await fetch(`/api/queues/${queueId}/join`, {
@@ -173,6 +210,23 @@ export default function QueueSelectionPage() {
     } finally {
       setJoiningQueue(null)
     }
+  }
+
+  const handleGuestFormSuccess = async (guestData: { 
+    customerName: string; 
+    customerPhone: string;
+    selectedBarberId?: string;
+    selectedServiceId?: string;
+  }) => {
+    if (selectedQueue) {
+      setGuestDialogOpen(false)
+      await joinQueue(selectedQueue.id, selectedQueue.type, guestData)
+    }
+  }
+
+  const handleGuestFormCancel = () => {
+    setGuestDialogOpen(false)
+    setSelectedQueue(null)
   }
 
   if (loading) {
@@ -446,7 +500,7 @@ export default function QueueSelectionPage() {
 
                   {/* Botão de entrar na fila */}
                   <Button
-                    onClick={() => handleJoinQueue(queue.id, queue.queue_type)}
+                    onClick={() => handleJoinQueue(queue.id, queue.queue_type, queue.name)}
                     disabled={joiningQueue === queue.id || !queue.is_active}
                     className="w-full"
                     variant={isQueueBusy ? "destructive" : "default"}
@@ -499,6 +553,19 @@ export default function QueueSelectionPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal para usuários guest */}
+      <Dialog open={guestDialogOpen} onOpenChange={setGuestDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <GuestFormDialog
+            onSuccess={handleGuestFormSuccess}
+            onCancel={handleGuestFormCancel}
+            queueName={selectedQueue?.name}
+            barbershopId={barbershopId}
+            queueType={selectedQueue?.type}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 

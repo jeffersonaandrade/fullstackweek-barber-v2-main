@@ -12,6 +12,7 @@ import { authOptions } from "./_lib/auth"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { getConfirmedBookings } from "./_data/get-confirmed-bookings"
+import WelcomeSection from "./_components/welcome-section"
 
 const Home = async () => {
   const session = await getServerSession(authOptions)
@@ -44,35 +45,8 @@ const Home = async () => {
       {/* header */}
       <Header />
       <div className="p-5">
-        {/* TEXTO */}
-        <h2 className="text-xl font-bold">
-          Olá, {session?.user ? session.user.name : "bem vindo"}!
-        </h2>
-        <p>
-          <span className="capitalize">
-            {format(new Date(), "EEEE, dd", { locale: ptBR })}
-          </span>
-          <span>&nbsp;de&nbsp;</span>
-          <span className="capitalize">
-            {format(new Date(), "MMMM", { locale: ptBR })}
-          </span>
-        </p>
-
-        {/* BOTÕES DE LOGIN/REGISTRO */}
-        {!session?.user && (
-          <div className="mt-4 flex gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link href="/auth/signin">
-                Entrar
-              </Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link href="/auth/signup">
-                Criar Conta
-              </Link>
-            </Button>
-          </div>
-        )}
+        {/* SEÇÃO DE BOAS-VINDAS (Client Component) */}
+        <WelcomeSection />
 
         {/* BUSCA */}
         <div className="mt-6">

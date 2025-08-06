@@ -7,10 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "check:env": "node scripts/check-env.js",
+    "setup:audit": "node scripts/setup-audit-config.js",
+    "cleanup:logs": "node scripts/cleanup-audit-logs.js",
     "migrate:supabase": "ts-node scripts/migrate-to-supabase.ts",
     "create:admin": "node scripts/create-admin-user.js",
     "add:password-column": "node scripts/add-password-column.js",
-    "create:sample-services": "node scripts/create-sample-services.js"
+    "create:sample-services": "node scripts/create-sample-services.js",
+    "clear:cache": "node scripts/clear-cache.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -29,7 +33,7 @@
     "date-fns": "^3.6.0",
     "dotenv": "^17.2.1",
     "lucide-react": "^0.412.0",
-    "next": "14.2.5",
+    "next": "^14.2.31",
     "next-auth": "^4.24.7",
     "next-themes": "^0.3.0",
     "react": "^18",
@@ -39,7 +43,7 @@
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.23.8"
+    "zod": "^4.0.15"
   },
   "devDependencies": {
     "@types/node": "^20",

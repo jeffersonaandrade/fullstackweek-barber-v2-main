@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../../../_lib/auth"
 import { supabaseAdmin } from "../../../_lib/supabase"
+import { CentralValidator } from "../../../_lib/validation/central-validator"
 
 export async function GET() {
   try {
@@ -47,30 +48,25 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const {
-      name,
-      address,
-      phones,
-      description,
-      is_active,
-      commission_rate,
-      timeout_minutes
-    } = body
-
-    if (!name || !address) {
-      return NextResponse.json({ error: 'Nome e endereço são obrigatórios' }, { status: 400 })
+    
+    // Usar central de validação
+    const validator = CentralValidator.getInstance()
+    const validation = await validator.validateBarbershop(body)
+    
+    if (!validation.success) {
+      return NextResponse.json({ 
+        error: 'Dados inválidos', 
+        details: validation.errors 
+      }, { status: 400 })
     }
+
+    const validatedData = validation.data
 
     const { data: barbershop, error } = await supabaseAdmin
       .from('barbershops')
       .insert({
-        name,
-        address,
-        phones: phones.filter((phone: string) => phone.trim() !== ""),
-        description: description || null,
-        is_active: is_active ?? true,
-        commission_rate: commission_rate || 30,
-        timeout_minutes: timeout_minutes || 10,
+        ...validatedData,
+        phones: validatedData.phones.filter((phone: string) => phone.trim() !== ""),
         admin_id: session.user.id
       })
       .select()
