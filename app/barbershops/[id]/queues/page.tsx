@@ -10,6 +10,10 @@ import { ArrowLeft, Users, Clock, MapPin, Phone, AlertCircle, XCircle } from 'lu
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogTrigger } from '@/app/_components/ui/dialog'
 import GuestFormDialog from '@/app/_components/guest-form-dialog'
+import { BarberCard } from '@/app/_components/barber-card'
+import { QueueTypeCard } from '@/app/_components/queue-type-card'
+import { StatusIndicator } from '@/app/_components/status-indicator'
+import { QueueStatsGrid } from '@/app/_components/queue-stats-grid'
 
 interface Queue {
   id: string
@@ -49,12 +53,22 @@ export default function QueueSelectionPage() {
   const [barbershopInfo, setBarbershopInfo] = useState<any>(null)
   const [guestDialogOpen, setGuestDialogOpen] = useState(false)
   const [selectedQueue, setSelectedQueue] = useState<{ id: string; type: 'general' | 'specific'; name: string } | null>(null)
+  const [barberStats, setBarberStats] = useState<{ [key: string]: any }>({})
 
   useEffect(() => {
     if (barbershopId) {
       fetchActiveBarbers()
     }
   }, [barbershopId])
+
+  useEffect(() => {
+    // Buscar estatísticas dos barbeiros quando eles são carregados
+    activeBarbers.forEach(barber => {
+      if (!barberStats[barber.id]) {
+        fetchBarberStats(barber.id)
+      }
+    })
+  }, [activeBarbers])
 
   const fetchActiveBarbers = async () => {
     try {
@@ -113,6 +127,22 @@ export default function QueueSelectionPage() {
     } catch (error) {
       console.error('Erro ao buscar filas:', error)
       toast.error('Erro ao carregar filas')
+    }
+  }
+
+  const fetchBarberStats = async (barberId: string) => {
+    try {
+      const response = await fetch(`/api/barbers/${barberId}/reviews`)
+      const data = await response.json()
+
+      if (response.ok) {
+        setBarberStats(prev => ({
+          ...prev,
+          [barberId]: data
+        }))
+      }
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas do barbeiro:', error)
     }
   }
 
@@ -312,248 +342,144 @@ export default function QueueSelectionPage() {
   const barbershop = queues[0]?.barbershops
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Button
-        variant="ghost"
-        onClick={() => router.back()}
-        className="mb-6"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Voltar
-      </Button>
+    <div className="relative min-h-screen bg-gray-900 text-white">
+      {/* Hero Section - Imagem de fundo da barbearia */}
+      <div className="absolute inset-0 bg-cover bg-center opacity-30" style={{ backgroundImage: "url(" + (barbershopInfo?.image_url || "") + ")" }}></div>
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        <Button
+          variant="ghost"
+          onClick={() => router.back()}
+          className="mb-6 text-white hover:bg-white/10"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Voltar
+        </Button>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Escolha sua fila</h1>
-        <div className="flex items-center gap-4 text-muted-foreground mb-6">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            <span>{barbershop?.name}</span>
-          </div>
-          {barbershop?.phones && (
-            <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4" />
-              <span>{barbershop.phones}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Status da barbearia - NOVO */}
-        <Card className="mb-6 border-green-200 bg-green-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-700">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              Barbearia Aberta
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <span className="text-green-700">
-                {activeBarbers.length} barbeiro{activeBarbers.length > 1 ? 's' : ''} ativo{activeBarbers.length > 1 ? 's' : ''}
-              </span>
-              <Badge variant="outline" className="border-green-300 text-green-700">
-                Disponível para filas
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Resumo geral das filas */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Resumo das Filas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div className="p-3 bg-muted rounded-lg">
-                <div className="text-2xl font-bold text-primary">
-                  {queues.length}
-                </div>
-                <p className="text-sm text-muted-foreground">Filas disponíveis</p>
+        <div className="mb-8 text-center">
+          <h1 className="text-5xl font-extrabold mb-2 text-yellow-400">{barbershop?.name || "Escolha sua fila"}</h1>
+          <div className="flex items-center justify-center gap-4 text-gray-300 mb-6">
+            {barbershop?.address && (
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                <span>{barbershop.address}</span>
               </div>
-              <div className="p-3 bg-muted rounded-lg">
-                <div className="text-2xl font-bold text-orange-600">
-                  {queues.reduce((total, queue) => total + queue.current_position, 0)}
-                </div>
-                <p className="text-sm text-muted-foreground">Total na fila</p>
+            )}
+            {barbershop?.phones && (
+              <div className="flex items-center gap-2">
+                <Phone className="h-5 w-5" />
+                <span>{barbershop.phones}</span>
               </div>
-              <div className="p-3 bg-muted rounded-lg">
-                <div className="text-2xl font-bold text-green-600">
-                  {activeBarbers.length}
-                </div>
-                <p className="text-sm text-muted-foreground">Barbeiros ativos</p>
-              </div>
-              <div className="p-3 bg-muted rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">
-                  {Math.ceil(queues.reduce((total, queue) => total + queue.current_position, 0) * 15 / Math.max(activeBarbers.length, 1))}
-                </div>
-                <p className="text-sm text-muted-foreground">Min estimados</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {queues.map((queue) => {
-          const estimatedTime = Math.ceil(queue.current_position * 15 / Math.max(activeBarbers.length, 1))
-          const isQueueBusy = queue.current_position > 10
-          const isQueueModerate = queue.current_position > 5 && queue.current_position <= 10
-          const isQueueLight = queue.current_position <= 5
-
-          return (
-            <Card key={queue.id} className="hover:shadow-lg transition-shadow border-2 hover:border-primary/20">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl">{queue.name}</CardTitle>
-                  <Badge variant={queue.queue_type === 'general' ? 'default' : 'secondary'}>
-                    {queue.queue_type === 'general' ? 'Geral' : 'Específica'}
-                  </Badge>
-                </div>
-                {queue.description && (
-                  <CardDescription>{queue.description}</CardDescription>
-                )}
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Status da fila - Melhorado */}
-                  <div className="grid grid-cols-3 gap-3 text-center">
-                    <div className="p-3 bg-muted rounded-lg">
-                      <div className="text-2xl font-bold text-primary">{queue.current_position}</div>
-                      <p className="text-xs text-muted-foreground">Pessoas na fila</p>
-                    </div>
-                    <div className="p-3 bg-muted rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">{activeBarbers.length}</div>
-                      <p className="text-xs text-muted-foreground">Barbeiros ativos</p>
-                    </div>
-                    <div className="p-3 bg-muted rounded-lg">
-                      <div className="text-2xl font-bold text-orange-600">
-                        {Math.ceil(15 / Math.max(activeBarbers.length, 1))}
-                      </div>
-                      <p className="text-xs text-muted-foreground">Min por cliente</p>
-                    </div>
-                  </div>
-
-                  {/* Tempo estimado - Melhorado */}
-                  <div className={`text-center p-4 rounded-lg border-2 ${
-                    isQueueBusy ? 'bg-red-50 border-red-200' : 
-                    isQueueModerate ? 'bg-yellow-50 border-yellow-200' : 
-                    'bg-green-50 border-green-200'
-                  }`}>
-                    <div className="text-xl font-bold mb-1">
-                      {estimatedTime} minutos
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Tempo estimado de espera
-                    </p>
-                    <div className="flex items-center justify-center gap-2 text-xs">
-                      {isQueueBusy && (
-                        <>
-                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                          <span className="text-red-700">Fila movimentada</span>
-                        </>
-                      )}
-                      {isQueueModerate && (
-                        <>
-                          <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                          <span className="text-yellow-700">Fila moderada</span>
-                        </>
-                      )}
-                      {isQueueLight && (
-                        <>
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span className="text-green-700">Fila tranquila</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Informações adicionais */}
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Capacidade máxima:</span>
-                      <span className="font-medium">
-                        {queue.max_capacity ? `${queue.max_capacity} pessoas` : 'Sem limite'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Status:</span>
-                      <span className={`font-medium ${queue.is_active ? 'text-green-600' : 'text-red-600'}`}>
-                        {queue.is_active ? 'Ativa' : 'Inativa'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Botão de entrar na fila */}
-                  <Button
-                    onClick={() => handleJoinQueue(queue.id, queue.queue_type, queue.name)}
-                    disabled={joiningQueue === queue.id || !queue.is_active}
-                    className="w-full"
-                    variant={isQueueBusy ? "destructive" : "default"}
-                  >
-                    {joiningQueue === queue.id ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
-                        Entrando...
-                      </>
-                    ) : (
-                      <>
-                        <Users className="h-4 w-4 mr-2" />
-                        {isQueueBusy ? 'Entrar na Fila (Movimentada)' : 'Entrar na Fila'}
-                      </>
-                    )}
-                  </Button>
-
-                  {!queue.is_active && (
-                    <div className="text-center text-sm text-orange-600 bg-orange-50 p-2 rounded-lg">
-                      <AlertCircle className="h-4 w-4 inline mr-1" />
-                      Fila temporariamente inativa
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
-      {/* Informações importantes */}
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5" />
-            Informações Importantes
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2 text-sm">
-            <p>• Você será notificado via WhatsApp quando for sua vez</p>
-            <p>• Chegue alguns minutos antes do horário estimado</p>
-            <p>• Se não se apresentar no tempo, pode perder sua vez</p>
-            <p>• Você pode sair da fila a qualquer momento</p>
-            {!session?.user?.id && (
-              <p className="text-orange-600 font-medium">
-                • Você está entrando como cliente sem conta. Para mais funcionalidades, faça login.
-              </p>
             )}
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Modal para usuários guest */}
-      <Dialog open={guestDialogOpen} onOpenChange={setGuestDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <GuestFormDialog
-            onSuccess={handleGuestFormSuccess}
-            onCancel={handleGuestFormCancel}
-            queueName={selectedQueue?.name}
-            barbershopId={barbershopId}
-            queueType={selectedQueue?.type}
-          />
-        </DialogContent>
-      </Dialog>
+          {/* Status da barbearia - NOVO */}
+          <Card className="mb-6 border-green-200 bg-green-50/20 text-green-100 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-center gap-2 text-green-400">
+                <StatusIndicator status={true} />
+                Barbearia Aberta
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-center">
+                <span className="text-green-300">
+                  {activeBarbers.length} barbeiro{activeBarbers.length > 1 ? 's' : ''} ativo{activeBarbers.length > 1 ? 's' : ''}
+                </span>
+                <Badge variant="outline" className="ml-4 border-green-300 text-green-300 bg-transparent">
+                  Disponível para filas
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Seção de Barbeiros Ativos */}
+        <h2 className="text-3xl font-bold mb-4 text-yellow-400 text-center">Conheça Nossos Barbeiros</h2>
+        <p className="text-center text-gray-300 mb-6">Escolha entre a fila geral ou a fila específica de um barbeiro</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+          {activeBarbers.map((barber) => {
+            const stats = barberStats[barber.id]
+            
+            return (
+              <BarberCard
+                key={barber.id}
+                barber={{
+                  id: barber.id,
+                  name: barber.users.name,
+                  avatar_url: barber.users.avatar_url,
+                  rating: stats?.averageRating || 4.5,
+                  reviews_count: stats?.totalReviews || 0,
+                  specialties: stats?.specialties || ["Corte", "Barba"],
+                  avg_service_time: stats?.avgServiceTime || 25,
+                  clients_today: stats?.clientsToday || 0,
+                }}
+                onSelectBarber={undefined}
+                isSelected={false}
+              />
+            )
+          })}
+        </div>
+
+        {/* Resumo geral das filas */}
+        <QueueStatsGrid
+          queuesLength={queues.length}
+          totalInQueue={queues.reduce((total, queue) => total + queue.current_position, 0)}
+          activeBarbersCount={activeBarbers.length}
+          estimatedTotalMinutes={Math.ceil(queues.reduce((total, queue) => total + queue.current_position, 0) * 15 / Math.max(activeBarbers.length, 1))}
+        />
+      </div>
+
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        <h2 className="text-3xl font-bold mb-6 text-yellow-400 text-center">Escolha Sua Fila</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {queues.map((queue) => {
+            const estimatedTime = Math.ceil(queue.current_position * 15 / Math.max(activeBarbers.length, 1))
+
+            return (
+              <QueueTypeCard
+                key={queue.id}
+                queue={queue}
+                estimatedTime={estimatedTime}
+                activeBarbersCount={activeBarbers.length}
+                joiningQueue={joiningQueue}
+                onJoinQueue={handleJoinQueue}
+              />
+            )
+          })}
+        </div>
+
+        {/* Informações importantes */}
+        <div className="mt-8 p-4 bg-muted rounded-lg text-gray-300">
+          <h3 className="font-semibold mb-2 flex items-center gap-2 text-yellow-400">
+            <AlertCircle className="h-5 w-5" />
+            Informações importantes
+          </h3>
+          <ul className="list-disc list-inside text-sm space-y-1">
+            <li>Você será notificado via WhatsApp quando for sua vez</li>
+            <li>Chegue alguns minutos antes do horário estimado</li>
+            <li>Se não se apresentar no tempo, pode perder sua vez</li>
+            <li>Você pode sair da fila a qualquer momento</li>
+            {!session?.user?.id && (
+              <li className="text-orange-400 font-medium">
+                Você está entrando como cliente sem conta. Para mais funcionalidades, faça login.
+              </li>
+            )}
+          </ul>
+        </div>
+
+        {/* Modal para usuários guest */}
+        <Dialog open={guestDialogOpen} onOpenChange={setGuestDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <GuestFormDialog
+              onSuccess={handleGuestFormSuccess}
+              onCancel={handleGuestFormCancel}
+              queueName={selectedQueue?.name}
+              barbershopId={barbershopId}
+              queueType={selectedQueue?.type}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   )
 } 

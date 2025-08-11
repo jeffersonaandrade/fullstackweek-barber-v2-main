@@ -12,10 +12,10 @@ interface BarbershopItemProps {
 
 const BarbershopItem = ({ barbershop }: BarbershopItemProps) => {
   return (
-    <Card className="min-w-[167px] rounded-2xl">
+    <Card className="h-full rounded-2xl transition-all duration-200 hover:shadow-lg">
       <CardContent className="p-0 px-1 pt-1">
         {/* IMAGEM */}
-        <div className="relative h-[159px] w-full">
+        <div className="relative h-[159px] w-full lg:h-[180px] xl:h-[200px]">
           {barbershop.image_url ? (
             <Image
               alt={barbershop.name}
@@ -46,16 +46,18 @@ const BarbershopItem = ({ barbershop }: BarbershopItemProps) => {
         </div>
 
         {/* TEXTO */}
-        <div className="px-1 py-3">
-          <h3 className="truncate font-semibold">{barbershop.name}</h3>
-          <p className="truncate text-sm text-gray-400">{barbershop.address}</p>
+        <div className="px-1 py-3 flex flex-col h-full">
+          <div className="flex-1">
+            <h3 className="truncate font-semibold text-sm lg:text-base">{barbershop.name}</h3>
+            <p className="truncate text-sm text-gray-400">{barbershop.address}</p>
+          </div>
           
           {/* BOTÕES */}
           <div className="mt-3 space-y-2">
-            <Button variant="secondary" className="w-full" asChild>
+            <Button variant="secondary" className="w-full text-xs lg:text-sm" asChild>
               <Link href={`/barbershops/${barbershop.id}`}>Reservar</Link>
             </Button>
-            <Button variant="outline" className="w-full" asChild>
+            <Button variant="outline" className="w-full text-xs lg:text-sm" asChild>
               <Link href={`/barbershops/${barbershop.id}/queues`}>
                 <Users className="h-4 w-4 mr-2" />
                 Ver Fila

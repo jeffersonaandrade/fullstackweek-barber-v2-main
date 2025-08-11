@@ -71,42 +71,42 @@ const BookingItem = ({ booking }: BookingItemProps) => {
   }
   return (
     <Sheet open={isSheetOpen} onOpenChange={handleSheetOpenChange}>
-      <SheetTrigger className="w-full min-w-[90%]">
-        <Card className="min-w-[90%]">
+      <SheetTrigger className="w-full">
+        <Card className="h-full transition-all duration-200 hover:shadow-lg">
           <CardContent className="flex justify-between p-0">
             {/* ESQUERDA */}
-            <div className="flex flex-col gap-2 py-5 pl-5">
+            <div className="flex flex-col gap-2 py-5 pl-5 flex-1">
               <Badge
                 className="w-fit"
                 variant={isConfirmed ? "default" : "secondary"}
               >
                 {isConfirmed ? "Confirmado" : "Finalizado"}
               </Badge>
-              <h3 className="font-semibold">{booking.service.name}</h3>
+              <h3 className="font-semibold text-sm lg:text-base">{booking.service.name}</h3>
 
               <div className="flex items-center gap-2">
                 <Avatar className="h-6 w-6">
                   <AvatarImage src={booking.service.barbershop.imageUrl} />
                 </Avatar>
-                <p className="text-sm">{booking.service.barbershop.name}</p>
+                <p className="text-sm lg:text-base">{booking.service.barbershop.name}</p>
               </div>
             </div>
             {/* DIREITA */}
-            <div className="flex flex-col items-center justify-center border-l-2 border-solid px-5">
+            <div className="flex flex-col items-center justify-center border-l-2 border-solid px-5 min-w-[80px]">
               <p className="text-sm capitalize">
                 {format(booking.date, "MMMM", { locale: ptBR })}
               </p>
-              <p className="text-2xl">
+              <p className="text-2xl lg:text-3xl">
                 {format(booking.date, "dd", { locale: ptBR })}
               </p>
-              <p className="text-sm">
+              <p className="text-sm lg:text-base">
                 {format(booking.date, "HH:mm", { locale: ptBR })}
               </p>
             </div>
           </CardContent>
         </Card>
       </SheetTrigger>
-      <SheetContent className="w-[85%]">
+      <SheetContent className="w-[85%] lg:w-[400px]">
         <SheetHeader>
           <SheetTitle className="text-left">Informações da Reserva</SheetTitle>
         </SheetHeader>
@@ -168,7 +168,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
                     Cancelar Reserva
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="w-[90%]" aria-describedby="cancel-booking-description">
+                <DialogContent className="w-[90%] lg:w-[500px]" aria-describedby="cancel-booking-description">
                   <DialogHeader>
                     <DialogTitle>Você deseja cancelar sua reserva?</DialogTitle>
                     <DialogDescription id="cancel-booking-description">

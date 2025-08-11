@@ -17,7 +17,7 @@ export async function GET(
         users!barber_status_barber_id_fkey (
           id,
           name,
-          image_url
+          avatar_url
         )
       `)
       .eq('barbershop_id', barbershopId)
@@ -37,7 +37,7 @@ export async function GET(
       users: {
         id: barber.users?.id || barber.barber_id,
         name: barber.users?.name || 'Barbeiro',
-        avatar_url: barber.users?.image_url || null
+        avatar_url: barber.users?.avatar_url || null
       }
     })) || []
 

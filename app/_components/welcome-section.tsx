@@ -20,8 +20,8 @@ const WelcomeSection = () => {
   if (!isClient || status === 'loading') {
     return (
       <div>
-        <h2 className="text-xl font-bold">Carregando...</h2>
-        <p>
+        <h2 className="text-xl font-bold lg:text-2xl xl:text-3xl">Carregando...</h2>
+        <p className="text-sm lg:text-base">
           <span className="capitalize">
             {format(new Date(), "EEEE, dd", { locale: ptBR })}
           </span>
@@ -37,10 +37,10 @@ const WelcomeSection = () => {
   return (
     <div>
       {/* TEXTO */}
-      <h2 className="text-xl font-bold">
+      <h2 className="text-xl font-bold lg:text-2xl xl:text-3xl">
         Olá, {session?.user ? session.user.name : "bem vindo"}!
       </h2>
-      <p>
+      <p className="text-sm lg:text-base">
         <span className="capitalize">
           {format(new Date(), "EEEE, dd", { locale: ptBR })}
         </span>
@@ -52,13 +52,13 @@ const WelcomeSection = () => {
 
       {/* BOTÕES DE LOGIN/REGISTRO */}
       {status === 'unauthenticated' && (
-        <div className="mt-4 flex gap-2">
-          <Button asChild variant="outline" size="sm">
+        <div className="mt-4 flex gap-2 lg:gap-3">
+          <Button asChild variant="outline" size="sm" className="lg:text-sm">
             <Link href="/auth/signin">
               Entrar
             </Link>
           </Button>
-          <Button asChild size="sm">
+          <Button asChild size="sm" className="lg:text-sm">
             <Link href="/auth/signup">
               Criar Conta
             </Link>
@@ -68,11 +68,11 @@ const WelcomeSection = () => {
 
       {/* INFORMAÇÕES DO USUÁRIO LOGADO */}
       {session?.user && (
-        <div className="mt-4 p-3 bg-muted rounded-lg">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-4 p-3 bg-muted rounded-lg lg:p-4">
+          <p className="text-sm text-muted-foreground lg:text-base">
             Logado como: <span className="font-medium">{session.user.email}</span>
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground lg:text-sm">
             Role: <span className="font-medium">{session.user.role}</span>
           </p>
         </div>
